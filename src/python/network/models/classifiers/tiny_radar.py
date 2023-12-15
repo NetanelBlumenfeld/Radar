@@ -1,7 +1,8 @@
 import torch as torch
+import torch.nn as nn
 
 
-class CausalConv1D(torch.nn.Conv1d):
+class CausalConv1D(nn.Conv1d):
     def __init__(
         self,
         in_channels,
@@ -32,7 +33,7 @@ class CausalConv1D(torch.nn.Conv1d):
         return result
 
 
-class cust_TCNLayer(CausalConv1D):
+class cust_TCNLayer(nn.Module):
     def __init__(
         self,
         in_channels,
@@ -43,23 +44,21 @@ class cust_TCNLayer(CausalConv1D):
         groups=1,
         bias=True,
     ):
-        super(cust_TCNLayer, self).__init__(
-            in_channels,
-            out_channels,
-            kernel_size=kernel_size,
-            stride=stride,
-            dilation=dilation,
-            groups=groups,
-            bias=bias,
+        super(cust_TCNLayer, self).__init__()
+        self.conv = CausalConv1D(
+            in_channels, out_channels, kernel_size, stride, dilation, groups, bias
         )
+        self.bn = nn.BatchNorm1d(out_channels)  # Batch normalization layer
+        self.activation = nn.ReLU()  # ReLU activation function
 
     def forward(self, input):
-        result = super(cust_TCNLayer, self).forward(input)
-        result = torch.nn.functional.relu(result)
+        result = self.conv(input)
+        result = self.bn(result)  # Apply batch normalization
+        result = self.activation(result)
         return result + input
 
 
-class TinyRadarNN(torch.nn.Module):
+class TinyRadarNN(nn.Module):
     def __init__(
         self,
         numberOfSensors,

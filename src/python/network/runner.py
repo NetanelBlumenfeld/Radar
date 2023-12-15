@@ -1,68 +1,17 @@
 import io
-import itertools
 from typing import Any
 
-import matplotlib.pyplot as plt
 import numpy as np
-import tensorflow as tf
 import torch
-from network.metric.accuracy import acc_tiny_radar
+from network.experiment_tracker import (
+    BaseTensorBoardTracker,
+    SaveModel,
+    str_acc,
+    str_loss,
+)
 from network.metric.metric_tracker import AccuracyMetric, LossMetric
-from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 from torch.utils.data.dataloader import DataLoader
 from tqdm import tqdm
-
-from python.network.experiment_tracker import BaseTensorBoardTracker
-
-
-def plot_to_image(figure):
-    """Converts the matplotlib plot specified by 'figure' to a PNG image and
-    returns it. The supplied figure is closed and inaccessible after this call."""
-    buf = io.BytesIO()
-    plt.savefig(buf, format="png")
-    plt.close(figure)
-    buf.seek(0)
-    image = tf.image.decode_png(buf.getvalue(), channels=4)
-    image = tf.expand_dims(image, 0)
-    return image
-
-
-def plot_confusion_matrix(cm, class_names):
-    """
-    Returns a matplotlib figure containing the plotted confusion matrix.
-
-    Args:
-      cm (array, shape = [n, n]): a confusion matrix of integer classes
-      class_names (array, shape = [n]): String names of the integer classes
-    """
-    # Normalize the confusion matrix.
-    cm = np.around(cm.astype("float") / cm.sum(axis=1)[:, np.newaxis], decimals=2)
-
-    figure = plt.figure(figsize=(16, 16))
-    plt.imshow(cm, interpolation="nearest", cmap=plt.cm.Blues)
-    plt.title("Confusion Matrix")
-    plt.colorbar()
-    tick_marks = np.arange(len(class_names))
-    plt.xticks(tick_marks, class_names, rotation=45)
-    plt.yticks(tick_marks, class_names)
-
-    # Use white text if squares are dark; otherwise black.
-    threshold = cm.max() / 2.0
-    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        color = "white" if cm[i, j] > threshold else "black"
-        plt.text(j, i, f"{cm[i, j]:.2%}", horizontalalignment="center", color=color)
-
-    plt.tight_layout()
-    plt.ylabel("True label")
-    plt.xlabel("Predicted label")
-    return figure
-
-
-def cm_tensor_board(true_label, pred_label, class_name):
-    cm = confusion_matrix(true_label, pred_label)
-    cm_figure = plot_confusion_matrix(cm, class_name)
-    image = plot_to_image(cm_figure)
-    return image
 
 
 class Runner:
@@ -74,18 +23,21 @@ class Runner:
         device: torch.device,
         optimizer: torch.optim.Optimizer,
         loss_metric: LossMetric,
+        acc_metric: AccuracyMetric,
         tboard: BaseTensorBoardTracker,
+        saver: SaveModel,
     ):
         self.model = model
         self.device = device
         self.optimizer = optimizer
         self.loader_train = loader_train
         self.loader_validation = loader_validation
-        self.acc_metric = AccuracyMetric(metric_function=acc_tiny_radar)
+        self.acc_metric = acc_metric
         self.loss_metric = loss_metric
         self.y_true_batches: list[list[Any]] = []
         self.y_pred_batches: list[list[Any]] = []
         self.tboard = tboard
+        self.saver = saver
         self.max_val_acc = 0
         self.min_val_loss = 99999999
 
@@ -95,44 +47,53 @@ class Runner:
         self.acc_metric.reset()
         self.loss_metric.reset()
 
-    def run(self, epochs: int, save_path: str):
-        for i in tqdm(range(epochs)):
-            self.model.train()
-            self.tboard.set_mode("train")
-            self.train_epoch()
-            self.tboard.add_loss(self.loss_metric.value, i)
-            self.tboard.add_acc(self.acc_metric.value, i)
+    def run(self, epochs: int):
+        bar_format = "{l_bar}{bar}| [{n_fmt}/{total_fmt}]  {postfix}"
+        self.tboard.writer.add_graph(
+            self.model, torch.rand(5, 32, 2, 32, 492).to(self.device)
+        )
+        # Create a tqdm object
+        pbar = tqdm(
+            self.loader_train,
+            total=len(self.loader_train),
+            bar_format=bar_format,
+            # ncols=200,
+        )
 
-            print(
-                f"Train Stage Result:\n Loss: {self.loss_metric.value:.2f}, Acc: {self.acc_metric.value:.2f}"
-            )
+        for i in range(epochs):
+            pbar.set_description(f"Epoch {i}")
+            self.tboard.set_mode("train")
+            self.train_epoch(pbar)
+            loss = self.loss_metric.value
+            acc = self.acc_metric.value
+            f_acc_t = str_acc(self.acc_metric.value)
+            f_loss_t = str_loss(self.loss_metric.value)
+            self.tboard.add_loss(loss, i)
+            self.tboard.add_acc(acc, i)
+
             self.reset()
-            self.model.eval()
             self.tboard.set_mode("validation")
             self.validate_epoch()
-            print(
-                f"Validation Stage Result:\n Loss: {self.loss_metric.value:.2f}, Acc: {self.acc_metric.value:.2f}"
-            )
+            loss_val = self.loss_metric.value
+            acc_val = self.acc_metric.value
+            f_acc_v = str_acc(acc_val)
+            f_loss_v = str_loss(loss_val)
             self.tboard.add_loss(self.loss_metric.value, i)
             self.tboard.add_acc(self.acc_metric.value, i)
-            if self.acc_metric.value > self.max_val_acc:
-                self.max_val_acc = self.acc_metric.value
-                name = (
-                    f"row_1_none_col_1_none_acc_max_acc_{self.acc_metric.value:.2f}.pt"
-                )
-                path = save_path + name
-                torch.save(self.model.state_dict(), path)
-                print(f"Saved model - {name}")
-            if self.loss_metric.value < self.min_val_loss:
-                self.min_val_loss = self.loss_metric.value
-                name = f"row_1_none_col_1_none_loss_min_loss_{self.loss_metric.value:.2f}.pt"
-                path = save_path + name
-                torch.save(self.model.state_dict(), path)
-                print(f"Saved model - {name}")
+            self.saver.save_model(self.model, acc_val["Acc"], loss_val["loss"])
             self.reset()
+            f = f"Train - {f_acc_t}, {f_loss_t}  || Val - {f_acc_v}, {f_loss_v} "
+
+            pbar.set_postfix_str(f)
+            pbar.update(1)
+            pbar.reset()
+            # pbar.update(1)
+        pbar.close()
         self.test_epoch()
 
-    def train_epoch(self):
+    def train_epoch(self, pbar):
+        self.model.train()
+
         for batch, labels in self.loader_train:
             batch, labels = self.model.reshape_to_model_output(
                 batch, labels, self.device
@@ -143,10 +104,16 @@ class Runner:
             loss = self.loss_metric.update(outputs, labels)
             loss.backward()
             self.optimizer.step()
-
             self.acc_metric.update(outputs, labels)
+            f_acc_t = str_acc(self.acc_metric.value)
+            f_loss_t = str_loss(self.loss_metric.value)
+            f = f"Train - {f_acc_t}, {f_loss_t}   "
+            pbar.set_postfix_str(f)
+
+            pbar.update(1)
 
     def validate_epoch(self):
+        self.model.eval()
         for batch, labels in self.loader_validation:
             # Transfer to GPU
             batch, labels = self.model.reshape_to_model_output(

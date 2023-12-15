@@ -1,0 +1,56 @@
+import numpy as np
+import torch as torch
+from training_scripts.training_tiny_radar import train_tiny_radar
+
+if __name__ == "__main__":
+    gestures = [
+        "PinchIndex",
+        "PinchPinky",
+        # "FingerSlider",
+        # "FingerRub",
+        # "SlowSwipeRL",
+        # "FastSwipeRL",
+        # "Push",
+        # "Pull",
+        # "PalmTilt",
+        # "Circle",
+        # "PalmHold",
+        # "NoHand",
+    ]
+    persons = 13
+    people = list(range(1, persons, 1))
+
+    # Dataset parameters
+    numberOfTimeSteps = 5
+    numberOfSensors = 2
+    numberOfRangePointsPerSensor = 492
+    numberOfInstanceWindows = 3
+    lengthOfSubWindow = 32
+    numberOfGestures = 12
+    batch_size = 16
+
+    pc = "mac"
+    if pc == "4090":
+        data_dir = "/mnt/netaneldata/11G/"
+        output_dir = "/home/aviran/netanel/python_proj/outputs/"
+        use_cuda = torch.cuda.is_available()
+        device = torch.device("cuda:0" if use_cuda else "cpu")
+    elif pc == "mac":
+        data_dir = "/Users/netanelblumenfeld/Desktop/data/11G/"
+        output_dir = "/Users/netanelblumenfeld/Desktop/bgu/Msc/project/outputs/"
+        device = torch.device("cpu")
+    elif pc == "3080":
+        data_dir = "/mnt/data/Netanel/111G/11G/"
+
+    print(device)
+
+    for data_name in ["data_feat/", "data_feat_ds_row_8_col_64_d_none_u_cubic/"]:
+        data_path = data_dir + data_name
+        train_tiny_radar(
+            gestures=gestures,
+            people=people,
+            output_dir=output_dir,
+            experiment_name=data_name,
+            data_dir=data_path,
+            device=device,
+        )

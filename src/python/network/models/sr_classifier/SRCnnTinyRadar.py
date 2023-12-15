@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 
 
@@ -18,11 +17,11 @@ class CombinedSRCNNClassifier(nn.Module):
         return batch, [hgit_res_imgs, true_label]
 
     def forward(self, inputs):
-        batch_size = inputs.size(0)
-        x = inputs.view(batch_size * 5, 32, 492, 2)
+        batch_size = inputs.size(1)
+        x = inputs.reshape(batch_size * 5, 2, 32, 492)
 
         rec_img = self.srcnn(x)
-        rec_img = rec_img.view(batch_size, 5, 32, 492, 2)
+        rec_img = rec_img.reshape(5, batch_size, 2, 32, 492)
         y_labels_pred = self.classifier(rec_img)
 
         return rec_img, y_labels_pred

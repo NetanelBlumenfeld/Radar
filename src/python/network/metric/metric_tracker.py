@@ -11,7 +11,7 @@ class AccuracyMetric:
 
     @property
     def value(self):
-        return 100 * (sum(self.values) / self.running_total)
+        return {"Acc": 100 * (sum(self.values) / self.running_total)}
 
     def update(self, outputs: torch.Tensor, labels: torch.Tensor):
         total, correct = self.metric_function(outputs, labels)
@@ -26,16 +26,19 @@ class AccuracyMetric:
 @dataclass
 class LossMetric:
     values: list[float] = field(default_factory=list)
-    metric_function: callable = torch.nn.CrossEntropyLoss
+    metric_function: callable = torch.nn.CrossEntropyLoss()
+    running_total: int = 0
 
     @property
     def value(self):
-        return sum(self.values)
+        return {"loss": sum(self.values) / self.running_total}
 
     def reset(self):
         self.values = []
+        self.running_total = 0
 
     def update(self, outputs: torch.Tensor, labels: torch.Tensor):
+        self.running_total += 1
         loss = self.metric_function(outputs, labels)
         self.values.append(loss.item())
         return loss
@@ -43,19 +46,30 @@ class LossMetric:
 
 @dataclass
 class LossMetricSRCnnTinyRadarNN:
+    batch_size: int
     loss_srcnn_list: list[float] = field(default_factory=list)
     loss_classifier_list: list[float] = field(default_factory=list)
     values: list[float] = field(default_factory=list)
-    metric_function: callable = torch.nn.CrossEntropyLoss
+    metric_function: callable = field(default_factory=callable)
+    count: int = 0
 
     @property
     def value(self):
-        return sum(self.values)
+        num_samples = self.batch_size * 5
+        return {
+            "loss": sum(self.values) / (num_samples + 1e-5),
+            "loss_srcnn": sum(self.loss_srcnn_list) / (num_samples + 1e-5),
+            "loss_classifier": sum(self.loss_classifier_list) / (num_samples + 1e-5),
+        }
 
     def reset(self):
         self.values = []
+        self.loss_classifier_list = []
+        self.loss_srcnn_list = []
+        self.count = 0
 
     def update(self, outputs: torch.Tensor, labels: torch.Tensor):
+        self.count += 1
         loss, loss_classifier, loss_srcnn = self.metric_function(outputs, labels)
         self.values.append(loss.item())
         self.loss_srcnn_list.append(loss_srcnn.item())

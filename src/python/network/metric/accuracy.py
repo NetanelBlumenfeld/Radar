@@ -40,4 +40,4 @@ def acc_srcnn_tiny_radar(
         total (float): the total number of predictions
     """
     # print(outputs.shape)
-    return acc_tiny_radar(outputs[1], labels[0], numberOfGestures)
+    return acc_tiny_radar(outputs[1], labels[1], numberOfGestures)
