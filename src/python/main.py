@@ -32,7 +32,7 @@ if __name__ == "__main__":
     pc = "4090"
     if pc == "4090":
         data_dir = "/mnt/netaneldata/11G/"
-        output_dir = "/home/aviran/netanel/python_proj/outputs/"
+        output_dir = "/home/aviran/netanel/Radar/outputs/"
         use_cuda = torch.cuda.is_available()
         device = torch.device("cuda:0" if use_cuda else "cpu")
     elif pc == "mac":
