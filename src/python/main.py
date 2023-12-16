@@ -16,7 +16,7 @@ if __name__ == "__main__":
         "PalmHold",
         "NoHand",
     ]
-    persons = 13
+    persons = 26
     people = list(range(1, persons, 1))
 
     # Dataset parameters
