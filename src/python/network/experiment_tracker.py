@@ -177,7 +177,7 @@ class SaveModel(CallbackProtocol):
 
     def on_epoch_end(self, epoch: int, logs: Optional[dict] = None) -> None:
         loss = logs["metrics"]["val"]["loss"]
-        acc = logs["metrics"]["train"]["acc"]
+        acc = logs["metrics"]["val"]["acc"]
         model = logs["model"]
         if acc > self.max_val_acc:
             self.max_val_acc = acc
