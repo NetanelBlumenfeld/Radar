@@ -11,7 +11,7 @@ class AccuracyMetric:
 
     @property
     def value(self):
-        return {"Acc": 100 * (sum(self.values) / self.running_total)}
+        return {"acc": 100 * (sum(self.values) / self.running_total)}
 
     def update(self, outputs: torch.Tensor, labels: torch.Tensor):
         total, correct = self.metric_function(outputs, labels)

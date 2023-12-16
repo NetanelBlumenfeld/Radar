@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 import torch
 from scipy.fftpack import fft, fftshift
+from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 from utils.utils_paths import ensure_path_exists
 
@@ -277,17 +278,51 @@ def loadFeatures(
     return featureList
 
 
-def setupLOOCV(dataX, dataY, validationPerson: int) -> tuple[Dataset, Dataset]:
+def setupLOOCV(dataX, dataY) -> tuple[Dataset, Dataset]:
     # Split people into train and validation set
     dataX_train = [*dataX[0:validationPerson], *dataX[validationPerson + 1 :]]
     dataY_train = [*dataY[0:validationPerson], *dataY[validationPerson + 1 :]]
 
+    # Set the validation Person used for Leave-one-out cross-validation
+    validationPerson = 10
     dataX_val = [dataX[validationPerson]]
     dataY_val = [dataY[validationPerson]]
 
     # Generate dataset from lists
     traindataset = GestureDataset(dataX_train, dataY_train)
     valdataset = GestureDataset(dataX_val, dataY_val)
+
+    return traindataset, valdataset
+
+
+def setupDataset(
+    dataX, dataY, test_size=0.2, random_state=42
+) -> tuple[Dataset, Dataset]:
+    """
+    Split the dataset into training and validation sets.
+
+    Parameters:
+    - dataX: List of data samples.
+    - dataY: Corresponding list of labels.
+    - test_size: Fraction of the dataset to be used as validation data.
+    - random_state: Seed for the random number generator for reproducibility.
+
+    Returns:
+    - traindataset: Training dataset.
+    - valdataset: Validation dataset.
+    """
+    # Flatten the list of arrays
+    flat_dataX = np.concatenate(dataX)
+    flat_dataY = np.concatenate(dataY)
+
+    # Split the dataset
+    X_train, X_val, Y_train, Y_val = train_test_split(
+        flat_dataX, flat_dataY, test_size=test_size, random_state=random_state
+    )
+
+    # Generate datasets
+    traindataset = GestureDataset([X_train], [Y_train])
+    valdataset = GestureDataset([X_val], [Y_val])
 
     return traindataset, valdataset
 
@@ -306,9 +341,6 @@ def get_tiny_radar_data_loader(
     lengthOfSubWindow = 32
     numberOfGestures = 12
 
-    # Set the validation Person used for Leave-one-out cross-validation
-    validationPerson = 10
-
     featureList = loadFeatures(
         pathToDataset,
         listPeople,
@@ -319,7 +351,7 @@ def get_tiny_radar_data_loader(
     dataX = list(map(lambda x: x[0], featureList))
     dataY = list(map(lambda x: x[1], featureList))
 
-    traindataset, valdataset = setupLOOCV(dataX, dataY, validationPerson)
+    traindataset, valdataset = setupDataset(dataX, dataY)
 
     training_generator = DataLoader(
         traindataset, batch_size=batch_size, shuffle=True, num_workers=0

@@ -1,4 +1,3 @@
-import numpy as np
 import torch as torch
 from training_scripts.training_tiny_radar import train_tiny_radar
 
@@ -6,16 +5,16 @@ if __name__ == "__main__":
     gestures = [
         "PinchIndex",
         "PinchPinky",
-        # "FingerSlider",
-        # "FingerRub",
-        # "SlowSwipeRL",
-        # "FastSwipeRL",
-        # "Push",
-        # "Pull",
-        # "PalmTilt",
-        # "Circle",
-        # "PalmHold",
-        # "NoHand",
+        "FingerSlider",
+        "FingerRub",
+        "SlowSwipeRL",
+        "FastSwipeRL",
+        "Push",
+        "Pull",
+        "PalmTilt",
+        "Circle",
+        "PalmHold",
+        "NoHand",
     ]
     persons = 13
     people = list(range(1, persons, 1))
@@ -28,6 +27,7 @@ if __name__ == "__main__":
     lengthOfSubWindow = 32
     numberOfGestures = 12
     batch_size = 16
+    epochs = 3
 
     pc = "mac"
     if pc == "4090":
@@ -53,4 +53,7 @@ if __name__ == "__main__":
             experiment_name=data_name,
             data_dir=data_path,
             device=device,
+            epochs=epochs,
+            batch_size=batch_size,
         )
+        break

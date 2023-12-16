@@ -1,6 +1,11 @@
 import torch as torch
 from data_loader.tiny_radar_loader import get_tiny_radar_data_loader
-from network.experiment_tracker import BaseTensorBoardTracker, SaveModel
+from network.experiment_tracker import (
+    BaseTensorBoardTracker,
+    CallbackHandler,
+    ProgressBar,
+    SaveModel,
+)
 from network.metric.accuracy import acc_tiny_radar
 from network.metric.loss import LossFunctionTinyRadarNN
 from network.metric.metric_tracker import AccuracyMetric, LossMetric
@@ -16,6 +21,8 @@ def train_tiny_radar(
     experiment_name: str,
     data_dir: str,
     device: torch.device,
+    epochs: int,
+    batch_size: int,
 ):
     # Dataswet parameters
     numberOfTimeSteps = 5
@@ -24,12 +31,7 @@ def train_tiny_radar(
     lengthOfSubWindow = 32
     numberOfGestures = 12
 
-    # training parameters
-    batch_size = 128
-    epochs = 10
-    lr = 0.001
-
-    for lr in [0.001]:
+    for lr in [0.001, 0.003, 0.005]:
         training_generator, val_generator = get_tiny_radar_data_loader(
             data_dir, people, gestures, batch_size
         )
@@ -56,8 +58,12 @@ def train_tiny_radar(
         save_model_dir = output_dir + "models/" + experiment_name
 
         # callbacks
-        t_board = BaseTensorBoardTracker(log_dir=t_board_dir, classes_name=gestures)
+        t_board = BaseTensorBoardTracker(
+            log_dir=t_board_dir, classes_name=gestures, best_model_path=save_model_dir
+        )
         saver = SaveModel(save_model_dir)
+        prog_bar = ProgressBar(training_generator, training_desc=experiment_name)
+        callbacks = CallbackHandler([t_board, saver, prog_bar])
         torch.cuda.empty_cache()
 
         runner = Runner(
@@ -70,5 +76,6 @@ def train_tiny_radar(
             acc_metric,
             t_board,
             saver,
+            callbacks,
         )
         runner.run(epochs)
