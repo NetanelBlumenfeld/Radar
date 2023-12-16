@@ -128,7 +128,7 @@ class BaseTensorBoardTracker(CallbackProtocol):
 
     def on_train_begin(self, logs: Optional[dict] = None) -> None:
         model = logs["model"]
-        self.writer.add_graph(model, torch.rand(5, 32, 2, 32, 492))
+        # self.writer.add_graph(model, torch.rand(5, 32, 2, 32, 492)).to(self.device)
 
     def on_train_end(self, logs: Optional[dict] = None) -> None:
         """loading the best model and calculate the confusion matrix"""
@@ -148,7 +148,7 @@ class BaseTensorBoardTracker(CallbackProtocol):
                 trues.append(labels.cpu().detach().numpy().reshape(-1))
             return preds, trues
 
-        model = logs["model"]
+        model = logs["model"].to(self.device)
         models = ["max_acc_model.pt", "min_loss_model.pt"]
         data_loader = logs["data_loader"]
         for model_name in models:

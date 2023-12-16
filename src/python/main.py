@@ -5,18 +5,18 @@ if __name__ == "__main__":
     gestures = [
         "PinchIndex",
         "PinchPinky",
-        "FingerSlider",
-        "FingerRub",
-        "SlowSwipeRL",
-        "FastSwipeRL",
-        "Push",
-        "Pull",
-        "PalmTilt",
-        "Circle",
-        "PalmHold",
-        "NoHand",
+        # "FingerSlider",
+        # "FingerRub",
+        # "SlowSwipeRL",
+        # "FastSwipeRL",
+        # "Push",
+        # "Pull",
+        # "PalmTilt",
+        # "Circle",
+        # "PalmHold",
+        # "NoHand",
     ]
-    persons = 26
+    persons = 13
     people = list(range(1, persons, 1))
 
     # Dataset parameters
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     elif pc == "mac":
         data_dir = "/Users/netanelblumenfeld/Desktop/data/11G/"
         output_dir = "/Users/netanelblumenfeld/Desktop/bgu/Msc/project/outputs/"
-        device = torch.device("cpu")
+        device = torch.device("mps")
     elif pc == "3080":
         data_dir = "/mnt/data/Netanel/111G/11G/"
 
