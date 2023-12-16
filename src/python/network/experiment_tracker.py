@@ -116,7 +116,7 @@ class BaseTensorBoardTracker(CallbackProtocol):
         cm = confusion_matrix(np.concatenate(trues), np.concatenate(preds))
         cm_normalized = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
         # Create the ConfusionMatrixDisplay instance
-        fig, ax = plt.subplots(figsize=(10, 10))
+        fig, ax = plt.subplots(figsize=(20, 20))
         cm_display = ConfusionMatrixDisplay(
             confusion_matrix=cm_normalized,
             display_labels=self.classes_name,
@@ -126,9 +126,9 @@ class BaseTensorBoardTracker(CallbackProtocol):
         cm_display.plot(cmap="Blues", values_format=".2%", ax=ax)
         self.writer.add_figure(f"confusion_matrix/{title}", cm_display.figure_, 0)
 
-    def on_train_begin(self, logs: Optional[dict] = None) -> None:
-        model = logs["model"]
-        # self.writer.add_graph(model, torch.rand(5, 32, 2, 32, 492)).to(self.device)
+    # def on_train_begin(self, logs: Optional[dict] = None) -> None:
+    # model = logs["model"]
+    # self.writer.add_graph(model, torch.rand(5, 32, 2, 32, 492)).to(self.device)
 
     def on_train_end(self, logs: Optional[dict] = None) -> None:
         """loading the best model and calculate the confusion matrix"""
