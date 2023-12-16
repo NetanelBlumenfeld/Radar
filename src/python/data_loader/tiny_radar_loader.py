@@ -279,12 +279,13 @@ def loadFeatures(
 
 
 def setupLOOCV(dataX, dataY) -> tuple[Dataset, Dataset]:
+    validationPerson = 10
+
     # Split people into train and validation set
     dataX_train = [*dataX[0:validationPerson], *dataX[validationPerson + 1 :]]
     dataY_train = [*dataY[0:validationPerson], *dataY[validationPerson + 1 :]]
 
     # Set the validation Person used for Leave-one-out cross-validation
-    validationPerson = 10
     dataX_val = [dataX[validationPerson]]
     dataY_val = [dataY[validationPerson]]
 
@@ -351,8 +352,8 @@ def get_tiny_radar_data_loader(
     dataX = list(map(lambda x: x[0], featureList))
     dataY = list(map(lambda x: x[1], featureList))
 
-    traindataset, valdataset = setupDataset(dataX, dataY)
-
+    traindataset, valdataset = setupLOOCV(dataX, dataY)
+   # traindataset, valdataset = setupDataset(dataX, dataY)
     training_generator = DataLoader(
         traindataset, batch_size=batch_size, shuffle=True, num_workers=0
     )
