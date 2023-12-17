@@ -60,8 +60,10 @@ def train_srcnn_tiny_radar(
                     training_generator, val_generator = get_sr_tiny_radar_data_loader(
                         low_res_path, hight_res__path, people, gestures, batch_size
                     )
-                    print(f"done loading data, {len(training_generator)} batches ")
                     print(experiment_name)
+                    for x, y in training_generator:
+                        print(x.shape, y.shape)
+                        break
                     # loading models
                     tiny_radar = TinyRadarNN(
                         numberOfSensors,
