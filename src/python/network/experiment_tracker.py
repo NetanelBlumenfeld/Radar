@@ -237,6 +237,7 @@ class ProgressBar(CallbackProtocol):
         metrics = logs["metrics"]
         self.out_val = f"Val - {self._print_metrics(metrics)}"
         self._update_postfix_str()
+        print("\n")
 
 
 class TensorBoardTrackerSRCnnTinyRadarNN(BaseTensorBoardTracker):
