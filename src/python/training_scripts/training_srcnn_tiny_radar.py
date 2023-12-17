@@ -34,8 +34,6 @@ def train_srcnn_tiny_radar(
     numberOfGestures = 12
 
     # Training parameters
-    classifier_wights = 0.5
-    srcnn_wights = 0.5
     lr = 0.001
 
     # paths
@@ -53,7 +51,9 @@ def train_srcnn_tiny_radar(
         for n_feat1, n_feat2 in zip([32, 64, 128, 128, 64], [32, 64, 128, 64, 32]):
             for activation in ["relu", "leaky_relu", "gelu", "tanh", "sigmoid"]:
                 for ksize in [(5, 5), (3, 3), (3, 5), (5, 3)]:
-                    experiment_name = f"sr_classifier/row_{row}_col_{col}_d_none_u_cubic_w_tiny/{classifier_wights}_w_srcnn_{srcnn_wights}/time_{get_time_in_string}/"
+                    experiment_name = f"sr_classifier/row_{row}_col_{col}_d_none_u_cubic_w_tiny/{w_c}_w_srcnn_{w_sr}/"
+                    experiment_name += f"n_feat1_{n_feat1}_n_feat2_{n_feat2}_ksize_{ksize}_activation_{activation}/"
+                    experiment_name += f"time_{get_time_in_string}/"
                     t_board_dir = output_dir + "tensorboard/" + experiment_name
                     save_model_dir = output_dir + "models/" + experiment_name
 
@@ -96,8 +96,8 @@ def train_srcnn_tiny_radar(
                     loss_func = LossFunctionSRCnnTinyRadarNN(
                         loss_func_srcnn=srcnn_loss,
                         loss_func_classifier=tiny_loss,
-                        wight_srcnn=srcnn_wights,
-                        wight_classifier=classifier_wights,
+                        wight_srcnn=w_sr,
+                        wight_classifier=w_c,
                     )
                     loss_metric = LossMetricSRCnnTinyRadarNN(
                         batch_size=batch_size, metric_function=loss_func
