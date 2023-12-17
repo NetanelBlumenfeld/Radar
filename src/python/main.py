@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     print(device)
 
-    for data_name in ["data_feat/", "data_feat_ds_row_8_col_64_d_none_u_cubic/"]:
+    for data_name in ["data_feat_ds_row_8_col_64_d_none_u_cubic/"]:
         data_path = data_dir + data_name
         train_tiny_radar(
             gestures=gestures,

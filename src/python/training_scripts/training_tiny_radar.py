@@ -31,7 +31,7 @@ def train_tiny_radar(
     lengthOfSubWindow = 32
     numberOfGestures = 12
 
-    for lr in [0.001, 0.003, 0.005]:
+    for lr in [0.001]:
         training_generator, val_generator = get_tiny_radar_data_loader(
             data_dir, people, gestures, batch_size
         )
