@@ -53,7 +53,7 @@ def train_srcnn_tiny_radar(
                 for ksize in [(5, 5), (3, 3), (3, 5), (5, 3)]:
                     experiment_name = f"sr_classifier/row_{row}_col_{col}_d_none_u_cubic/w_tiny{w_c}_w_srcnn_{w_sr}/"
                     experiment_name += f"n_feat1_{n_feat1}_n_feat2_{n_feat2}_ksize_{ksize}_activation_{activation}/"
-                    experiment_name += f"time_{get_time_in_string}/"
+                    experiment_name += f"time_{get_time_in_string()}/"
                     t_board_dir = output_dir + "tensorboard/" + experiment_name
                     save_model_dir = output_dir + "models/" + experiment_name
 
