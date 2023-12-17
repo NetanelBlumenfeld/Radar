@@ -48,9 +48,9 @@ def train_srcnn_tiny_radar(
         + "models/classifier/tiny_radar/data_feat/lr_0.001/time_2023-12-16_15:31:47/max_acc_model.pt"
     )
     for w_sr, w_c in zip([0, 0.25, 0.5, 0.75, 1], [1, 0.75, 0.5, 0.25, 0]):
-        for n_feat1, n_feat2 in zip([32, 64, 128, 128, 64], [32, 64, 128, 64, 32]):
+        for n_feat1, n_feat2 in zip([64, 128, 128, 64], [64, 128, 64, 32]):
             for activation in ["relu", "leaky_relu", "gelu", "tanh", "sigmoid"]:
-                for ksize in [(3, 3), (3, 5), (5, 3)]:
+                for ksize in [(7, 7), (3, 5), (5, 3)]:
                     experiment_name = f"sr_classifier/row_{row}_col_{col}_d_none_u_cubic/w_tiny{w_c}_w_srcnn_{w_sr}/"
                     experiment_name += f"n_feat1_{n_feat1}_n_feat2_{n_feat2}_ksize_{ksize}_activation_{activation}/"
                     experiment_name += f"time_{get_time_in_string()}/"

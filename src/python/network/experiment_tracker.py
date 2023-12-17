@@ -145,7 +145,7 @@ class BaseTensorBoardTracker(CallbackProtocol):
                 pred_labels = outputs[1].cpu().detach().numpy().reshape(-1, 12)
                 pred_labels = np.argmax(pred_labels, axis=1)
                 preds.append(pred_labels)
-                trues.append(labels[0].cpu().detach().numpy().reshape(-1))
+                trues.append(labels[1].cpu().detach().numpy().reshape(-1))
             return preds, trues
 
         model = logs["model"].to(self.device)
