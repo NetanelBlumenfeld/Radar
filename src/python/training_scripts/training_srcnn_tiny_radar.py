@@ -67,9 +67,7 @@ def train_srcnn_tiny_radar(
         numberOfGestures,
     ).to(device)
 
-    tiny_radar.load_state_dict(
-        torch.load(tiny_radar_wights_path), map_location=torch.device("cpu")
-    )
+    tiny_radar.load_state_dict(torch.load(tiny_radar_wights_path))
     for param in tiny_radar.parameters():
         param.requires_grad = False
     srcnn = SRCnn().to(device)
