@@ -82,7 +82,6 @@ def train_srcnn_tiny_radar(
         numberOfTimeSteps=numberOfTimeSteps, loss_function=torch.nn.MSELoss()
     )
     loss_func = LossFunctionSRCnnTinyRadarNN(
-        numberOfTimeSteps=numberOfTimeSteps,
         loss_func_srcnn=srcnn_loss,
         loss_func_classifier=tiny_loss,
         wight_srcnn=srcnn_wights,
