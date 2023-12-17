@@ -1,22 +1,23 @@
 import torch as torch
+from training_scripts.training_srcnn_tiny_radar import train_srcnn_tiny_radar
 from training_scripts.training_tiny_radar import train_tiny_radar
 
 if __name__ == "__main__":
     gestures = [
         "PinchIndex",
         "PinchPinky",
-        "FingerSlider",
-        "FingerRub",
-        "SlowSwipeRL",
-        "FastSwipeRL",
-        "Push",
-        "Pull",
-        "PalmTilt",
-        "Circle",
-        "PalmHold",
-        "NoHand",
+        # "FingerSlider",
+        # "FingerRub",
+        # "SlowSwipeRL",
+        # "FastSwipeRL",
+        # "Push",
+        # "Pull",
+        # "PalmTilt",
+        # "Circle",
+        # "PalmHold",
+        # "NoHand",
     ]
-    persons = 26
+    persons = 13
     people = list(range(1, persons, 1))
 
     # Dataset parameters
@@ -38,22 +39,33 @@ if __name__ == "__main__":
     elif pc == "mac":
         data_dir = "/Users/netanelblumenfeld/Desktop/data/11G/"
         output_dir = "/Users/netanelblumenfeld/Desktop/bgu/Msc/project/outputs/"
-        device = torch.device("mps")
+        device = torch.device("cpu")
     elif pc == "3080":
         data_dir = "/mnt/data/Netanel/111G/11G/"
 
     print(device)
 
-    for data_name in ["data_feat_ds_row_8_col_64_d_none_u_cubic/"]:
-        data_path = data_dir + data_name
-        train_tiny_radar(
-            gestures=gestures,
-            people=people,
-            output_dir=output_dir,
-            experiment_name=data_name,
-            data_dir=data_path,
-            device=device,
-            epochs=epochs,
-            batch_size=batch_size,
-        )
-        break
+    train_srcnn_tiny_radar(
+        gestures=gestures,
+        people=people,
+        output_dir=output_dir,
+        experiment_name="",
+        data_dir=data_dir,
+        device=device,
+        epochs=epochs,
+        batch_size=batch_size,
+    )
+
+    # for data_name in ["data_feat_ds_row_8_col_64_d_none_u_cubic/"]:
+    #     data_path = data_dir + data_name
+    #     train_tiny_radar(
+    #         gestures=gestures,
+    #         people=people,
+    #         output_dir=output_dir,
+    #         experiment_name=data_name,
+    #         data_dir=data_path,
+    #         device=device,
+    #         epochs=epochs,
+    #         batch_size=batch_size,
+    #     )
+    #     break

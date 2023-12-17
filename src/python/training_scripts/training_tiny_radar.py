@@ -77,8 +77,6 @@ def train_tiny_radar(
             optimizer,
             loss_metric,
             acc_metric,
-            t_board,
-            saver,
             callbacks,
         )
         runner.run(epochs)

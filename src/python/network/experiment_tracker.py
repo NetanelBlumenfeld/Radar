@@ -224,6 +224,7 @@ class ProgressBar(CallbackProtocol):
         self.out_val = ""
         self.out_train = ""
         self.pbar.set_description(f"Epoch {epoch}")
+        print("\n")
 
     def on_batch_end(
         self, batch: Optional[int] = None, logs: Optional[dict] = None
@@ -237,7 +238,6 @@ class ProgressBar(CallbackProtocol):
         metrics = logs["metrics"]
         self.out_val = f"Val - {self._print_metrics(metrics)}"
         self._update_postfix_str()
-        print("\n")
 
 
 class TensorBoardTrackerSRCnnTinyRadarNN(BaseTensorBoardTracker):

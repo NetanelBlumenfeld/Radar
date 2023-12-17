@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 import torch
 from scipy.fftpack import fft, fftshift
+from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 
 
@@ -141,6 +142,50 @@ def setupLOOCV(
     # Generate dataset from lists
     traindataset = SRGestureDataset(low_res_train, hight_res_train, labels_train)
     valdataset = SRGestureDataset(low_res_val, hight_res_val, labels_val)
+
+    return traindataset, valdataset
+
+
+def setupDataset(
+    low_res_imgs, hight_res_imgs, labels, test_size=0.2, random_state=42
+) -> tuple[Dataset, Dataset]:
+    """
+    Split the dataset into training and validation sets.
+
+    Parameters:
+    - dataX: List of data samples.
+    - dataY: Corresponding list of labels.
+    - test_size: Fraction of the dataset to be used as validation data.
+    - random_state: Seed for the random number generator for reproducibility.
+
+    Returns:
+    - traindataset: Training dataset.
+    - valdataset: Validation dataset.
+    """
+    # Flatten the list of arrays
+    flat_low_res_imgs = np.concatenate(low_res_imgs)
+    flat_high_res_imgs = np.concatenate(hight_res_imgs)
+    flat_labels = np.concatenate(labels)
+
+    # Split the data into training and testing sets
+    (
+        train_low_res,
+        test_low_res,
+        train_high_res,
+        test_high_res,
+        train_labels,
+        test_labels,
+    ) = train_test_split(
+        flat_low_res_imgs,
+        flat_high_res_imgs,
+        flat_labels,
+        test_size=test_size,
+        random_state=test_size,
+    )
+
+    # Generate datasets
+    traindataset = SRGestureDataset([train_low_res], [train_high_res], [train_labels])
+    valdataset = SRGestureDataset([test_low_res], [test_high_res], [test_labels])
 
     return traindataset, valdataset
 

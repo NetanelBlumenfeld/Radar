@@ -21,8 +21,6 @@ class Runner:
         optimizer: torch.optim.Optimizer,
         loss_metric: LossMetric,
         acc_metric: AccuracyMetric,
-        tboard: BaseTensorBoardTracker,
-        saver: SaveModel,
         callbacks: CallbackHandler,
     ):
         self.model = model
@@ -32,8 +30,6 @@ class Runner:
         self.loader_validation = loader_validation
         self.acc_metric = acc_metric
         self.loss_metric = loss_metric
-        self.tboard = tboard
-        self.saver = saver
         self.callbacks = callbacks
 
     def reset(self):

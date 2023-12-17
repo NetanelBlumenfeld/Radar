@@ -51,25 +51,25 @@ class LossMetricSRCnnTinyRadarNN:
     loss_classifier_list: list[float] = field(default_factory=list)
     values: list[float] = field(default_factory=list)
     metric_function: callable = field(default_factory=callable)
-    count: int = 0
+    running_total: int = 0
 
     @property
     def value(self):
-        num_samples = self.batch_size * 5
         return {
-            "loss": sum(self.values) / (num_samples + 1e-5),
-            "loss_srcnn": sum(self.loss_srcnn_list) / (num_samples + 1e-5),
-            "loss_classifier": sum(self.loss_classifier_list) / (num_samples + 1e-5),
+            "loss": sum(self.values) / (self.running_total + 1e-5),
+            "loss_srcnn": sum(self.loss_srcnn_list) / (self.running_total + 1e-5),
+            "loss_classifier": sum(self.loss_classifier_list)
+            / (self.running_total + 1e-5),
         }
 
     def reset(self):
         self.values = []
         self.loss_classifier_list = []
         self.loss_srcnn_list = []
-        self.count = 0
+        self.running_total = 0
 
     def update(self, outputs: torch.Tensor, labels: torch.Tensor):
-        self.count += 1
+        self.running_total += 1
         loss, loss_classifier, loss_srcnn = self.metric_function(outputs, labels)
         self.values.append(loss.item())
         self.loss_srcnn_list.append(loss_srcnn.item())
