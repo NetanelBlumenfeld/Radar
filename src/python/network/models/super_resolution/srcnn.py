@@ -7,7 +7,6 @@ class SRCnn(nn.Module):
         num_channels=2,
         num_features_1=64,
         num_features_2=64,
-        num_features_3=32,
         kernel_size=(3, 3),
         activation="relu",
     ):
