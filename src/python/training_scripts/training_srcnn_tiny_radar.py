@@ -62,7 +62,7 @@ def train_srcnn_tiny_radar(
                     )
                     print(experiment_name)
                     for x, y in training_generator:
-                        print(x.shape, y.shape)
+                        print(x.shape, y[0].shape, y[1].shape)
                         break
                     # loading models
                     tiny_radar = TinyRadarNN(
