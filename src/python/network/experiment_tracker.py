@@ -142,10 +142,10 @@ class BaseTensorBoardTracker(CallbackProtocol):
                 )
 
                 outputs = model(batch)
-                outputs = outputs.cpu().detach().numpy().reshape(-1, 12)
-                outputs = np.argmax(outputs, axis=1)
-                preds.append(outputs)
-                trues.append(labels.cpu().detach().numpy().reshape(-1))
+                pred_labels = outputs[1].cpu().detach().numpy().reshape(-1, 12)
+                pred_labels = np.argmax(pred_labels, axis=1)
+                preds.append(pred_labels)
+                trues.append(labels[0].cpu().detach().numpy().reshape(-1))
             return preds, trues
 
         model = logs["model"].to(self.device)
@@ -223,8 +223,9 @@ class ProgressBar(CallbackProtocol):
         self.pbar.reset()
         self.out_val = ""
         self.out_train = ""
-        self.pbar.set_description(f"Epoch {epoch}")
         print("\n")
+
+        self.pbar.set_description(f"Epoch {epoch}")
 
     def on_batch_end(
         self, batch: Optional[int] = None, logs: Optional[dict] = None
