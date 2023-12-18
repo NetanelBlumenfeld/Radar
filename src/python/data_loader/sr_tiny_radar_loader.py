@@ -1,11 +1,8 @@
 from collections import namedtuple
 from functools import partial
-from multiprocessing import Pool
 
-import cv2
 import numpy as np
 import torch
-from scipy.fftpack import fft, fftshift
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 
