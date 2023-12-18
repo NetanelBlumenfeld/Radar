@@ -52,7 +52,7 @@ def train_srcnn_tiny_radar(
     #         for activation in ["relu", "leaky_relu", "gelu", "tanh"]:
     #             for ksize in [(7, 7), (3, 3)]:
     for w_sr, w_c in zip([0], [1]):
-        for n_feat1, n_feat2 in zip([32], [32]):
+        for n_feat1, n_feat2 in zip([64], [64]):
             for activation in ["relu"]:
                 for ksize in [(3, 3)]:
                     # TODO - better naming

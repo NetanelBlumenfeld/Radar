@@ -1,6 +1,6 @@
 import torch as torch
 from training_scripts.training_srcnn_tiny_radar import train_srcnn_tiny_radar
-from training_scripts.training_tiny_radar import train_tiny_radar
+#from training_scripts.training_tiny_radar import train_tiny_radar
 
 if __name__ == "__main__":
     gestures = [
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     lengthOfSubWindow = 32
     numberOfGestures = 12
     batch_size = 128
-    epochs = 150
+    epochs = 100
 
     pc = "4090"
     if pc == "4090":
