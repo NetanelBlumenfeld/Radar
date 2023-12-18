@@ -230,6 +230,7 @@ def loadPerson(paramList, scale: bool):
         # Load data gesture data from disk
         try:
             GestureData = np.load(paramList.pathToFeatures + filename)
+            print(GestureData.shape)
             if scale:
                 for i in range(GestureData.shape[0]):
                     for j in range(GestureData.shape[1]):
