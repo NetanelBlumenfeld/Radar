@@ -47,7 +47,7 @@ if __name__ == "__main__":
         device = torch.device("cuda:0" if use_cuda else "cpu")
 
     print(device)
-    if pc == "3080":
+    if pc == "4090":
         train_srcnn_tiny_radar(
             gestures=gestures,
             people=people,
