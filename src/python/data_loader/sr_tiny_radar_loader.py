@@ -58,7 +58,7 @@ def loadPerson(paramList, scale: bool = False):
         # Load data gesture data from disk
         try:
             GestureData_los_res = np.load(paramList.pathToLowRes + filename)
-            GestureData_hight_res = np.load(paramList.pathToLowRes + filename)
+            GestureData_hight_res = np.load(paramList.pathToHightRes + filename)
             if scale:
                 for i in range(GestureData_los_res.shape[0]):
                     for j in range(GestureData_los_res.shape[1]):
