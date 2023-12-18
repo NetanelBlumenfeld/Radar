@@ -133,10 +133,10 @@ class BaseTensorBoardTracker(CallbackProtocol):
     def on_train_end(self, logs: Optional[dict] = None) -> None:
         """loading the best model and calculate the confusion matrix"""
 
+        # TODO - move to another place
         def _get_preds_for_best_models(model, loader):
             preds, trues = [], []
             for batch, labels in loader:
-                # Transfer to GPU
                 batch, labels = model.reshape_to_model_output(
                     batch, labels, self.device
                 )

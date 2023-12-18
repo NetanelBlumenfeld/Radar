@@ -54,5 +54,5 @@ class SRCnn(nn.Module):
         identity = x
         x = self.activation(self.conv1(x))
         x = self.activation(self.conv2(x))
-        x = self.activation(self.conv3(x) + identity)
+        x = self.conv3(x) + identity
         return x

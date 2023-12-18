@@ -1,4 +1,5 @@
 from collections import namedtuple
+from functools import partial
 from multiprocessing import Pool
 
 import cv2
@@ -209,7 +210,7 @@ def down_sample_and_save(folder_path, row_factor, col_factor, interpolation=None
             np.save(file_path, x)
 
 
-def loadPerson(paramList):
+def loadPerson(paramList, scale: bool):
     SubjectData = list()
     SubjectLabel = list()
     print(f"Doing {paramList.personIdx}")
@@ -229,6 +230,13 @@ def loadPerson(paramList):
         # Load data gesture data from disk
         try:
             GestureData = np.load(paramList.pathToFeatures + filename)
+            for i in range(GestureData.shape[0]):
+                for j in range(GestureData.shape[1]):
+                    for k in range(GestureData.shape[4]):
+                        GestureData[i, j, :, :, k] = (
+                            GestureData[i, j, :, :, k]
+                            / GestureData[i, j, :, :, k].max()
+                        )
         except IOError:
             print("Could not open file: " + filename)
             continue
@@ -256,7 +264,12 @@ def loadPerson(paramList):
 
 
 def loadFeatures(
-    pathtoDataset, listOfPeople, listofGestures, numberofInstanceCopies, lengthOfWindow
+    pathtoDataset,
+    listOfPeople,
+    listofGestures,
+    numberofInstanceCopies,
+    lengthOfWindow,
+    scale,
 ):
     ParamList = namedtuple(
         "ParamList",
@@ -274,7 +287,8 @@ def loadFeatures(
             )
         )
     # with Pool(8) as p:
-    featureList = list(map(loadPerson, personList))
+    loadPerson_scale = partial(loadPerson, scale=scale)
+    featureList = list(map(loadPerson_scale, personList))
     return featureList
 
 
@@ -332,6 +346,7 @@ def get_tiny_radar_data_loader(
     listPeople: list[int],
     listGestures: list[str],
     batch_size: int = 128,
+    scale: bool = True,
 ) -> tuple[DataLoader, DataLoader]:
     # Dataset parameters
     numberOfTimeSteps = 5
@@ -347,6 +362,7 @@ def get_tiny_radar_data_loader(
         listGestures,
         numberOfInstanceWindows,
         lengthOfSubWindow,
+        scale,
     )
     dataX = list(map(lambda x: x[0], featureList))
     dataY = list(map(lambda x: x[1], featureList))
