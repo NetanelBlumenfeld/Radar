@@ -30,7 +30,7 @@ if __name__ == "__main__":
     batch_size = 128
     epochs = 150
 
-    pc = "4090"
+    pc = "mac"
     if pc == "4090":
         data_dir = "/mnt/netaneldata/11G/"
         output_dir = "/home/aviran/netanel/Radar/outputs/"

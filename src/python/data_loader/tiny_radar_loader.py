@@ -230,13 +230,14 @@ def loadPerson(paramList, scale: bool):
         # Load data gesture data from disk
         try:
             GestureData = np.load(paramList.pathToFeatures + filename)
-            for i in range(GestureData.shape[0]):
-                for j in range(GestureData.shape[1]):
-                    for k in range(GestureData.shape[4]):
-                        GestureData[i, j, :, :, k] = (
-                            GestureData[i, j, :, :, k]
-                            / GestureData[i, j, :, :, k].max()
-                        )
+            if scale:
+                for i in range(GestureData.shape[0]):
+                    for j in range(GestureData.shape[1]):
+                        for k in range(GestureData.shape[4]):
+                            GestureData[i, j, :, :, k] = (
+                                GestureData[i, j, :, :, k]
+                                / GestureData[i, j, :, :, k].max()
+                            )
         except IOError:
             print("Could not open file: " + filename)
             continue
