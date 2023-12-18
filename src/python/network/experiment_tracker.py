@@ -8,8 +8,7 @@ from matplotlib import pyplot as plt
 from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-
-from python.utils.utils_paths import ensure_path_exists
+from utils.utils_paths import ensure_path_exists
 
 
 def get_time_in_string():
