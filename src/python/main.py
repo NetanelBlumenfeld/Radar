@@ -6,18 +6,18 @@ if __name__ == "__main__":
     gestures = [
         "PinchIndex",
         "PinchPinky",
-        # "FingerSlider",
-        # "FingerRub",
-        # "SlowSwipeRL",
-        # "FastSwipeRL",
-        # "Push",
-        # "Pull",
-        # "PalmTilt",
-        # "Circle",
-        # "PalmHold",
-        # "NoHand",
+        "FingerSlider",
+        "FingerRub",
+        "SlowSwipeRL",
+        "FastSwipeRL",
+        "Push",
+        "Pull",
+        "PalmTilt",
+        "Circle",
+        "PalmHold",
+        "NoHand",
     ]
-    persons = 12
+    persons = 26
     people = list(range(1, persons, 1))
 
     # Dataset parameters
@@ -45,17 +45,17 @@ if __name__ == "__main__":
         output_dir = "/Users/netanelblumenfeld/Desktop/bgu/Msc/project/outputs/"
 
     print(device)
-
-    train_srcnn_tiny_radar(
-        gestures=gestures,
-        people=people,
-        output_dir=output_dir,
-        experiment_name="",
-        data_dir=data_dir,
-        device=device,
-        epochs=epochs,
-        batch_size=batch_size,
-    )
+    if pc == "3080":
+        train_srcnn_tiny_radar(
+            gestures=gestures,
+            people=people,
+            output_dir=output_dir,
+            experiment_name="",
+            data_dir=data_dir,
+            device=device,
+            epochs=epochs,
+            batch_size=batch_size,
+        )
 
     # for data_name in ["/data_feat_ds_row_8_col_64_d_none_u_cubic/"]:
     #     data_path = data_dir + data_name
