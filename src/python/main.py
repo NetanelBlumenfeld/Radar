@@ -43,6 +43,8 @@ if __name__ == "__main__":
     elif pc == "3080":
         data_dir = "/mnt/data/Netanel/111G/11G/"
         output_dir = "/Users/netanelblumenfeld/Desktop/bgu/Msc/project/outputs/"
+        use_cuda = torch.cuda.is_available()
+        device = torch.device("cuda:0" if use_cuda else "cpu")
 
     print(device)
     if pc == "3080":
