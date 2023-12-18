@@ -6,18 +6,18 @@ if __name__ == "__main__":
     gestures = [
         "PinchIndex",
         "PinchPinky",
-        "FingerSlider",
-        "FingerRub",
-        "SlowSwipeRL",
-        "FastSwipeRL",
-        "Push",
-        "Pull",
-        "PalmTilt",
-        "Circle",
-        "PalmHold",
-        "NoHand",
+        # "FingerSlider",
+        # "FingerRub",
+        # "SlowSwipeRL",
+        # "FastSwipeRL",
+        # "Push",
+        # "Pull",
+        # "PalmTilt",
+        # "Circle",
+        # "PalmHold",
+        # "NoHand",
     ]
-    persons = 26
+    persons = 2
     people = list(range(1, persons, 1))
 
     # Dataset parameters
@@ -27,10 +27,10 @@ if __name__ == "__main__":
     numberOfInstanceWindows = 3
     lengthOfSubWindow = 32
     numberOfGestures = 12
-    batch_size = 128
+    batch_size = 8
     epochs = 150
 
-    pc = "3080"
+    pc = "mac"
     if pc == "4090":
         data_dir = "/mnt/netaneldata/11G/"
         output_dir = "/home/aviran/netanel/Radar/outputs/"
@@ -47,7 +47,7 @@ if __name__ == "__main__":
         device = torch.device("cuda:0" if use_cuda else "cpu")
 
     print(device)
-    if pc == "3080":
+    if pc == "mac":
         train_srcnn_tiny_radar(
             gestures=gestures,
             people=people,
