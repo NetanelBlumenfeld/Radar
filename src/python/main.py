@@ -6,18 +6,18 @@ if __name__ == "__main__":
     gestures = [
         "PinchIndex",
         "PinchPinky",
-        # "FingerSlider",
-        # "FingerRub",
-        # "SlowSwipeRL",
-        # "FastSwipeRL",
-        # "Push",
-        # "Pull",
-        # "PalmTilt",
-        # "Circle",
-        # "PalmHold",
-        # "NoHand",
+        "FingerSlider",
+        "FingerRub",
+        "SlowSwipeRL",
+        "FastSwipeRL",
+        "Push",
+        "Pull",
+        "PalmTilt",
+        "Circle",
+        "PalmHold",
+        "NoHand",
     ]
-    persons = 2
+    persons = 26
     people = list(range(1, persons, 1))
 
     # Dataset parameters
@@ -47,7 +47,7 @@ if __name__ == "__main__":
         device = torch.device("cuda:0" if use_cuda else "cpu")
 
     print(device)
-    if pc == "mac":
+    if pc == "3080":
         train_srcnn_tiny_radar(
             gestures=gestures,
             people=people,
