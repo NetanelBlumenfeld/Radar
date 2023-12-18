@@ -234,7 +234,7 @@ def get_sr_tiny_radar_data_loader(
     hight_res_imgs = list(map(lambda x: x[1], featureList))
     labels = list(map(lambda x: x[2], featureList))
 
-    traindataset, valdataset = setupLOOCV(
+    traindataset, valdataset = setupDataset(
         low_res_imgs, hight_res_imgs, labels, validationPerson
     )
 
