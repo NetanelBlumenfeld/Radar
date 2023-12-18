@@ -1,4 +1,5 @@
 from collections import namedtuple
+from functools import partial
 from multiprocessing import Pool
 
 import cv2
@@ -39,7 +40,7 @@ class SRGestureDataset(Dataset):
         ]
 
 
-def loadPerson(paramList):
+def loadPerson(paramList, scale: bool = False):
     SubjectData_hight_res = list()
     SubjectData_low_res = list()
     SubjectLabel = list()
@@ -61,6 +62,22 @@ def loadPerson(paramList):
         try:
             GestureData_los_res = np.load(paramList.pathToLowRes + filename)
             GestureData_hight_res = np.load(paramList.pathToLowRes + filename)
+            if scale:
+                for i in range(GestureData_los_res.shape[0]):
+                    for j in range(GestureData_los_res.shape[1]):
+                        for k in range(GestureData_los_res.shape[4]):
+                            max_val_los_res = (
+                                GestureData_los_res[i, j, :, :, k].max() + 0.0001
+                            )
+                            GestureData_los_res[i, j, :, :, k] = (
+                                GestureData_los_res[i, j, :, :, k] / max_val_los_res
+                            )
+                            max_val_hight_res = (
+                                GestureData_hight_res[i, j, :, :, k].max() + 0.0001
+                            )
+                            GestureData_hight_res[i, j, :, :, k] = (
+                                GestureData_hight_res[i, j, :, :, k] / max_val_hight_res
+                            )
         except IOError:
             print("Could not open file: " + filename)
             continue
@@ -99,6 +116,7 @@ def loadFeatures(
     listofGestures,
     numberofInstanceCopies,
     lengthOfWindow,
+    scale: bool,
 ):
     ParamList = namedtuple(
         "ParamList",
@@ -116,8 +134,9 @@ def loadFeatures(
                 lengthOfWindow,
             )
         )
-    # with Pool(8) as p:
-    featureList = list(map(loadPerson, personList))
+    loadPerson_scale = partial(loadPerson, scale=scale)
+
+    featureList = list(map(loadPerson_scale, personList))
     return featureList
 
 
@@ -196,14 +215,11 @@ def get_sr_tiny_radar_data_loader(
     listPeople: list[int],
     listGestures: list[str],
     batch_size: int = 128,
+    scale: bool = False,
 ) -> tuple[DataLoader, DataLoader]:
     # Dataset parameters
-    numberOfTimeSteps = 5
-    numberOfSensors = 2
-    numberOfRangePointsPerSensor = 492
     numberOfInstanceWindows = 3
     lengthOfSubWindow = 32
-    numberOfGestures = 12
 
     # Set the validation Person used for Leave-one-out cross-validation
     validationPerson = 10
@@ -215,6 +231,7 @@ def get_sr_tiny_radar_data_loader(
         listGestures,
         numberOfInstanceWindows,
         lengthOfSubWindow,
+        scale,
     )
     low_res_imgs = list(map(lambda x: x[0], featureList))
     hight_res_imgs = list(map(lambda x: x[1], featureList))
