@@ -63,7 +63,12 @@ def train_srcnn_tiny_radar(
                     save_model_dir = output_dir + "models/" + experiment_name
 
                     training_generator, val_generator = get_sr_tiny_radar_data_loader(
-                        low_res_path, hight_res__path, people, gestures, batch_size
+                        low_res_path,
+                        hight_res__path,
+                        people,
+                        gestures,
+                        batch_size,
+                        scale=True,
                     )
                     print(experiment_name)
                     for x, y in training_generator:

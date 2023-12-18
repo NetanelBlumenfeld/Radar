@@ -43,30 +43,32 @@ if __name__ == "__main__":
     elif pc == "3080":
         data_dir = "/mnt/data/Netanel/111G/11G/"
         output_dir = "/Users/netanelblumenfeld/Desktop/bgu/Msc/project/outputs/"
+        use_cuda = torch.cuda.is_available()
+        device = torch.device("cuda:0" if use_cuda else "cpu")
 
     print(device)
-
-    # train_srcnn_tiny_radar(
-    #     gestures=gestures,
-    #     people=people,
-    #     output_dir=output_dir,
-    #     experiment_name="",
-    #     data_dir=data_dir,
-    #     device=device,
-    #     epochs=epochs,
-    #     batch_size=batch_size,
-    # )
-
-    for data_name in ["/data_feat_ds_row_8_col_64_d_none_u_cubic/"]:
-        data_path = data_dir + data_name
-        train_tiny_radar(
+    if pc == "3080":
+        train_srcnn_tiny_radar(
             gestures=gestures,
             people=people,
             output_dir=output_dir,
-            experiment_name=data_name,
-            data_dir=data_path,
+            experiment_name="",
+            data_dir=data_dir,
             device=device,
             epochs=epochs,
             batch_size=batch_size,
         )
-        break
+
+    # for data_name in ["/data_feat_ds_row_8_col_64_d_none_u_cubic/"]:
+    #     data_path = data_dir + data_name
+    #     train_tiny_radar(
+    #         gestures=gestures,
+    #         people=people,
+    #         output_dir=output_dir,
+    #         experiment_name=data_name,
+    #         data_dir=data_path,
+    #         device=device,
+    #         epochs=epochs,
+    #         batch_size=batch_size,
+    #     )
+    #     break

@@ -13,7 +13,13 @@ def ensure_path_exists(path):
     None
     """
     if not os.path.exists(path):
-        os.makedirs(path)
+        try:
+            print(f"Creating directory at: {path}")  # Debugging statement
+            os.makedirs(path)
+        except PermissionError:
+            print(f"Permission denied: Cannot create directory at '{path}'.")
+        except Exception as e:
+            print(f"An error occurred while creating directory: {e}")
 
 
 def get_time_in_string():

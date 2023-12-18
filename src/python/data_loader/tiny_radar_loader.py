@@ -1,6 +1,5 @@
 from collections import namedtuple
 from functools import partial
-from multiprocessing import Pool
 
 import cv2
 import numpy as np
@@ -288,7 +287,6 @@ def loadFeatures(
                 lengthOfWindow,
             )
         )
-    # with Pool(8) as p:
     loadPerson_scale = partial(loadPerson, scale=scale)
     featureList = list(map(loadPerson_scale, personList))
     return featureList
