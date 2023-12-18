@@ -196,7 +196,7 @@ def setupDataset(
         flat_high_res_imgs,
         flat_labels,
         test_size=test_size,
-        random_state=test_size,
+        random_state=random_state,
     )
 
     # Generate datasets
@@ -234,9 +234,7 @@ def get_sr_tiny_radar_data_loader(
     hight_res_imgs = list(map(lambda x: x[1], featureList))
     labels = list(map(lambda x: x[2], featureList))
 
-    traindataset, valdataset = setupDataset(
-        low_res_imgs, hight_res_imgs, labels, validationPerson
-    )
+    traindataset, valdataset = setupDataset(low_res_imgs, hight_res_imgs, labels)
 
     training_generator = DataLoader(
         traindataset, batch_size=batch_size, shuffle=True, num_workers=0

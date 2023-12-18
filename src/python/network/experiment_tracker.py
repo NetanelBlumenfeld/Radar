@@ -8,20 +8,7 @@ from matplotlib import pyplot as plt
 from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-
-
-def ensure_path_exists(path):
-    """
-    Checks if a given path exists, and if not, creates it.
-
-    Parameters:
-    path (str): The path to be checked and potentially created.
-
-    Returns:
-    None
-    """
-    if not os.path.exists(path):
-        os.makedirs(path)
+from utils.utils_paths import ensure_path_exists
 
 
 def get_time_in_string():
@@ -211,7 +198,7 @@ class ProgressBar(CallbackProtocol):
         self.pbar.set_postfix_str(f"{self.out_train} {self.out_val}")
 
     def on_train_begin(self, logs: Optional[dict] = None) -> None:
-        print(f"Start Training\n {self.training_desc}")
+        # print(f"Start Training\n {self.training_desc}")
         bar_format = "{l_bar}{bar}| [{n_fmt}/{total_fmt}]  {postfix}"
         self.pbar = tqdm(
             self.loader_train,
