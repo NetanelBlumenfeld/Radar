@@ -346,7 +346,7 @@ def get_tiny_radar_data_loader(
     listPeople: list[int],
     listGestures: list[str],
     batch_size: int = 128,
-    scale: bool = True,
+    scale: bool = False,
 ) -> tuple[DataLoader, DataLoader]:
     # Dataset parameters
     numberOfTimeSteps = 5
