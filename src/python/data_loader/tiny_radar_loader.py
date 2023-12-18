@@ -235,9 +235,9 @@ def loadPerson(paramList, scale: bool):
                 for i in range(GestureData.shape[0]):
                     for j in range(GestureData.shape[1]):
                         for k in range(GestureData.shape[4]):
+                            max_val = GestureData[i, j, :, :, k].max() + 0.0001
                             GestureData[i, j, :, :, k] = (
-                                GestureData[i, j, :, :, k]
-                                / GestureData[i, j, :, :, k].max()
+                                GestureData[i, j, :, :, k] / max_val
                             )
         except IOError:
             print("Could not open file: " + filename)
