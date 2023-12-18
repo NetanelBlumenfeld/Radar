@@ -33,7 +33,7 @@ def train_tiny_radar(
 
     for lr in [0.001]:
         training_generator, val_generator = get_tiny_radar_data_loader(
-            data_dir, people, gestures, batch_size, scale=False
+            data_dir, people, gestures, batch_size, scale=True
         )
         print(
             f" Training on {len(training_generator)} batches, validation on {len(val_generator)} batches"
