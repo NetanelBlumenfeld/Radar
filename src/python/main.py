@@ -46,27 +46,27 @@ if __name__ == "__main__":
 
     print(device)
 
-    # train_srcnn_tiny_radar(
-    #     gestures=gestures,
-    #     people=people,
-    #     output_dir=output_dir,
-    #     experiment_name="",
-    #     data_dir=data_dir,
-    #     device=device,
-    #     epochs=epochs,
-    #     batch_size=batch_size,
-    # )
+    train_srcnn_tiny_radar(
+        gestures=gestures,
+        people=people,
+        output_dir=output_dir,
+        experiment_name="",
+        data_dir=data_dir,
+        device=device,
+        epochs=epochs,
+        batch_size=batch_size,
+    )
 
-    for data_name in ["/data_feat_ds_row_8_col_64_d_none_u_cubic/"]:
-        data_path = data_dir + data_name
-        train_tiny_radar(
-            gestures=gestures,
-            people=people,
-            output_dir=output_dir,
-            experiment_name=data_name,
-            data_dir=data_path,
-            device=device,
-            epochs=epochs,
-            batch_size=batch_size,
-        )
-        break
+    # for data_name in ["/data_feat_ds_row_8_col_64_d_none_u_cubic/"]:
+    #     data_path = data_dir + data_name
+    #     train_tiny_radar(
+    #         gestures=gestures,
+    #         people=people,
+    #         output_dir=output_dir,
+    #         experiment_name=data_name,
+    #         data_dir=data_path,
+    #         device=device,
+    #         epochs=epochs,
+    #         batch_size=batch_size,
+    #     )
+    #     break
