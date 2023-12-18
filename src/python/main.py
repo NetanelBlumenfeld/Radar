@@ -30,7 +30,7 @@ if __name__ == "__main__":
     batch_size = 128
     epochs = 150
 
-    pc = "mac"
+    pc = "3080"
     if pc == "4090":
         data_dir = "/mnt/netaneldata/11G/"
         output_dir = "/home/aviran/netanel/Radar/outputs/"
@@ -42,6 +42,7 @@ if __name__ == "__main__":
         device = torch.device("cpu")
     elif pc == "3080":
         data_dir = "/mnt/data/Netanel/111G/11G/"
+        output_dir = "/Users/netanelblumenfeld/Desktop/bgu/Msc/project/outputs/"
 
     print(device)
 
@@ -56,7 +57,7 @@ if __name__ == "__main__":
     #     batch_size=batch_size,
     # )
 
-    for data_name in ["data_feat/", "/data_feat_ds_row_8_col_64_d_none_u_cubic/"]:
+    for data_name in ["/data_feat_ds_row_8_col_64_d_none_u_cubic/"]:
         data_path = data_dir + data_name
         train_tiny_radar(
             gestures=gestures,

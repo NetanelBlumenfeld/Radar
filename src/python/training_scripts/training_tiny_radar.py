@@ -38,6 +38,7 @@ def train_tiny_radar(
         print(
             f" Training on {len(training_generator)} batches, validation on {len(val_generator)} batches"
         )
+        print(f"Running - {experiment_name}")
         model = TinyRadarNN(
             numberOfSensors,
             numberOfRangePointsPerSensor,
