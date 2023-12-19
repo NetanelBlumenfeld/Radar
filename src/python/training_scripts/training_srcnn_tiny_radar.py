@@ -104,7 +104,7 @@ def train_srcnn_tiny_radar(
                     )
                     srcnn_loss = LossFunctionTinyRadarNN(
                         numberOfTimeSteps=numberOfTimeSteps,
-                        loss_function=torch.nn.L1loss().to(device),
+                        loss_function=torch.nn.L1Loss().to(device),
                     )
                     loss_func = LossFunctionSRCnnTinyRadarNN(
                         loss_func_srcnn=srcnn_loss,
