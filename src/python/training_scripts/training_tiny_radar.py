@@ -55,9 +55,7 @@ def train_tiny_radar(
 
         # paths
         data_name = data_dir.split("/")[-2]
-        experiment_name = (
-            f"classifier/tiny_radar/{data_name}/lr_{lr}/time_{get_time_in_string()}/"
-        )
+        experiment_name = f"classifier/tiny_radar/{data_name}_norm_-1_1/lr_{lr}/time_{get_time_in_string()}/"
         t_board_dir = output_dir + "tensorboard/" + experiment_name
         save_model_dir = output_dir + "models/" + experiment_name
 
