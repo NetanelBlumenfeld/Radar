@@ -50,8 +50,8 @@ class GestureDataset(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        return self.x_train[idx].to(torch.float32), [
-            self.hight_res[idx](torch.float32),
+        return self.x_train[idx], [
+            self.hight_res[idx],
             torch.LongTensor(self.label[idx]),
         ]
 
