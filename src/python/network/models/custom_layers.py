@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 def init_weights(modules):
@@ -34,4 +35,22 @@ class BasicBlockSig(nn.Module):
 
     def forward(self, x):
         out = self.body(x)
+        return out
+
+
+class ResidualBlock(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(ResidualBlock, self).__init__()
+
+        self.body = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, 3, 1, 1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(out_channels, out_channels, 3, 1, 1),
+        )
+
+        init_weights(self.modules)
+
+    def forward(self, x):
+        out = self.body(x)
+        out = F.relu(out + x)
         return out

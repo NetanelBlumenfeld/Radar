@@ -67,13 +67,20 @@ def loadPerson(paramList, scale: bool = False):
                                 GestureData_los_res[i, j, :, :, k].max() + 0.0001
                             )
                             GestureData_los_res[i, j, :, :, k] = (
-                                GestureData_los_res[i, j, :, :, k] / max_val_los_res
+                                2
+                                * (GestureData_los_res[i, j, :, :, k] / max_val_los_res)
+                                - 1
                             )
                             max_val_hight_res = (
                                 GestureData_hight_res[i, j, :, :, k].max() + 0.0001
                             )
                             GestureData_hight_res[i, j, :, :, k] = (
-                                GestureData_hight_res[i, j, :, :, k] / max_val_hight_res
+                                2
+                                * (
+                                    GestureData_hight_res[i, j, :, :, k]
+                                    / max_val_hight_res
+                                )
+                                - 1
                             )
         except IOError:
             print("Could not open file: " + filename)
