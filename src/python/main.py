@@ -17,7 +17,7 @@ if __name__ == "__main__":
         "PalmHold",
         "NoHand",
     ]
-    persons = 26
+    persons = 5
     people = list(range(1, persons, 1))
 
     # Dataset parameters
@@ -48,7 +48,11 @@ if __name__ == "__main__":
         device = torch.device("cuda:0" if use_cuda else "cpu")
 
     print(device)
+<<<<<<< HEAD
     if pc == "4090":
+=======
+    if pc == "mac":
+>>>>>>> 6add57af4717931eaaac93164279162232ad8f83
         train_srcnn_tiny_radar(
             gestures=gestures,
             people=people,

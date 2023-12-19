@@ -100,11 +100,11 @@ def train_srcnn_tiny_radar(
                     )
                     tiny_loss = LossFunctionTinyRadarNN(
                         numberOfTimeSteps=numberOfTimeSteps,
-                        loss_function=torch.nn.CrossEntropyLoss(),
+                        loss_function=torch.nn.CrossEntropyLoss().to(device),
                     )
                     srcnn_loss = LossFunctionTinyRadarNN(
                         numberOfTimeSteps=numberOfTimeSteps,
-                        loss_function=torch.nn.MSELoss(),
+                        loss_function=torch.nn.MSELoss().to(device),
                     )
                     loss_func = LossFunctionSRCnnTinyRadarNN(
                         loss_func_srcnn=srcnn_loss,
