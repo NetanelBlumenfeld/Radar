@@ -17,7 +17,6 @@ class SRCnn(nn.Module):
             self.activation = nn.ReLU()
         elif activation == "leaky_relu":
             self.activation = nn.LeakyReLU(0.2)
-            print('LIKYRELUUU')
         elif activation == "sigmoid":
             self.activation = nn.Sigmoid()
         elif activation == "tanh":
