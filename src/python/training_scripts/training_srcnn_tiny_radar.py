@@ -11,6 +11,7 @@ from network.metric.loss import LossFunctionSRCnnTinyRadarNN, LossFunctionTinyRa
 from network.metric.metric_tracker import AccuracyMetric, LossMetricSRCnnTinyRadarNN
 from network.models.classifiers.tiny_radar import TinyRadarNN
 from network.models.sr_classifier.SRCnnTinyRadar import CombinedSRCNNClassifier
+from network.models.super_resolution.drln import DRLN
 from network.models.super_resolution.srcnn import SRCnn
 from network.runner import Runner
 from utils.utils_paths import get_time_in_string
@@ -86,12 +87,13 @@ def train_srcnn_tiny_radar(
                     # tiny_radar.load_state_dict(torch.load(tiny_radar_wights_path))
                     # for param in tiny_radar.parameters():
                     #     param.requires_grad = False
-                    srcnn = SRCnn(
-                        num_features_1=n_feat1,
-                        num_features_2=n_feat2,
-                        kernel_size=ksize,
-                        activation=activation,
-                    ).to(device)
+                    # srcnn = SRCnn(
+                    #     num_features_1=n_feat1,
+                    #     num_features_2=n_feat2,
+                    #     kernel_size=ksize,
+                    #     activation=activation,
+                    # ).to(device)
+                    srcnn = DRLN(4)
                     model = CombinedSRCNNClassifier(srcnn, tiny_radar).to(device)
 
                     # models configs
