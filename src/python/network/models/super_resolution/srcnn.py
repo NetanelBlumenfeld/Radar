@@ -44,7 +44,7 @@ class SRCnn(nn.Module):
             padding=(kernel_size[0] // 2, kernel_size[1] // 2),
         )
         self.conv3 = nn.Conv2d(
-            num_features_2,
+            num_features_1,
             num_channels,
             kernel_size=kernel_size,
             padding=(kernel_size[0] // 2, kernel_size[1] // 2),
@@ -55,6 +55,6 @@ class SRCnn(nn.Module):
     def forward(self, x):
         identity = x
         x = self.activation(self.bn1(self.conv1(x)))
-        x = self.activation(self.bn2(self.conv2(x)))
+        # x = self.activation(self.bn2(self.conv2(x)))
         x = self.activation(self.conv3(x)) + identity
         return x
