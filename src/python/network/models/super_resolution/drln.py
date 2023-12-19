@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
-
-from python.network.models import custom_layers as ops
+from network.models import custom_layers as ops
 
 
 class CALayer(nn.Module):
@@ -64,13 +63,13 @@ class DRLN(nn.Module):
         # scale = args.scale[0]
         # act = nn.ReLU(True)
 
-        self.scale = args.scale[0]
+        self.scale = args
         chs = 64
 
-        self.sub_mean = ops.MeanShift((0.4488, 0.4371, 0.4040), sub=True)
-        self.add_mean = ops.MeanShift((0.4488, 0.4371, 0.4040), sub=False)
+        # self.sub_mean = ops.MeanShift((0.4488, 0.4371, 0.4040), sub=True)
+        # self.add_mean = ops.MeanShift((0.4488, 0.4371, 0.4040), sub=False)
 
-        self.head = nn.Conv2d(3, chs, 3, 1, 1)
+        self.head = nn.Conv2d(1, chs, 3, 1, 1)
 
         self.b1 = Block(chs, chs)
         self.b2 = Block(chs, chs)
@@ -116,10 +115,10 @@ class DRLN(nn.Module):
 
         self.upsample = ops.UpsampleBlock(chs, self.scale, multi_scale=False)
         # self.convert = ops.ConvertBlock(chs, chs, 20)
-        self.tail = nn.Conv2d(chs, 3, 3, 1, 1)
+        self.tail = nn.Conv2d(chs, 1, 3, 1, 1)
 
     def forward(self, x):
-        x = self.sub_mean(x)
+        # x = self.sub_mean(x)
         x = self.head(x)
         c0 = o0 = x
 
@@ -216,9 +215,9 @@ class DRLN(nn.Module):
         out = self.upsample(b_out, scale=self.scale)
 
         out = self.tail(out)
-        f_out = self.add_mean(out)
+        # f_out = self.add_mean(out)
 
-        return f_out
+        return out
 
     def load_state_dict(self, state_dict, strict=False):
         own_state = self.state_dict()

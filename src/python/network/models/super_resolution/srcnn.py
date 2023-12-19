@@ -30,6 +30,9 @@ class SRCnn(nn.Module):
         else:
             raise ValueError("Invalid activation function")
 
+        self.relu = nn.ReLU()
+        self.tahn = nn.Tanh()
+
         # Define the layers with hyperparameters
         self.conv1 = nn.Conv2d(
             num_channels,
@@ -54,7 +57,7 @@ class SRCnn(nn.Module):
 
     def forward(self, x):
         identity = x
-        x = self.activation(self.bn1(self.conv1(x)))
+        x = self.relu(self.bn1(self.conv1(x)))
         # x = self.activation(self.bn2(self.conv2(x)))
-        x = self.activation(self.conv3(x)) + identity
+        x = self.tahn(self.conv3(x)) + identity
         return x

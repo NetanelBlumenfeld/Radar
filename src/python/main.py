@@ -17,7 +17,7 @@ if __name__ == "__main__":
         "PalmHold",
         "NoHand",
     ]
-    persons = 26
+    persons = 2
     people = list(range(1, persons, 1))
 
     # Dataset parameters
@@ -30,7 +30,7 @@ if __name__ == "__main__":
     batch_size = 64
     epochs = 100
 
-    pc = "4090"
+    pc = "mac"
 
     if pc == "4090":
         data_dir = "/mnt/netaneldata/11G/"
