@@ -50,8 +50,8 @@ class SRCnn(nn.Module):
             kernel_size=kernel_size,
             padding=(kernel_size[0] // 2, kernel_size[1] // 2),
         )
-        self.bn1 = nn.BatchNorm2d(num_features_1)  # Batch normalization layer
-        self.bn2 = nn.BatchNorm2d(num_features_2)  # Batch normalization layer
+        self.bn1 = nn.BatchNorm2d(num_features_1)
+        self.bn2 = nn.BatchNorm2d(num_features_2)
 
     def forward(self, x):
         identity = x
