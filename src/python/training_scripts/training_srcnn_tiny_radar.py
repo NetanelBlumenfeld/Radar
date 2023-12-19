@@ -37,8 +37,8 @@ def train_srcnn_tiny_radar(
     lr = 0.001
 
     # paths
-    row = 8
-    col = 64
+    row = 4
+    col = 4
     hight_res_folder = "data_feat/"
     low_res_folder = f"data_feat_ds_row_{row}_col_{col}_d_none_u_cubic/"
     hight_res__path = data_dir + hight_res_folder
@@ -56,7 +56,7 @@ def train_srcnn_tiny_radar(
             for activation in ["leaky_relu"]:
                 for ksize in [(3, 3)]:
                     # TODO - better naming
-                    experiment_name = f"sr_classifier/row_{row}_col_{col}_d_none_u_cubic/w_tiny{w_c}_w_srcnn_{w_sr}_norm_full_train_2conv/"
+                    experiment_name = f"sr_classifier/_{row}_col_{col}_d_none_u_cubic/w_tiny{w_c}_w_srcnn_{w_sr}_norm_full_train_2conv/"
                     experiment_name += f"n_feat1_{n_feat1}_n_feat2_{n_feat2}_ksize_{ksize}_activation_{activation}/"
                     experiment_name += f"time_{get_time_in_string()}/"
                     t_board_dir = output_dir + "tensorboard/" + experiment_name
