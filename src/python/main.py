@@ -17,7 +17,7 @@ if __name__ == "__main__":
         "PalmHold",
         "NoHand",
     ]
-    persons = 2
+    persons = 26
     people = list(range(1, persons, 1))
 
     # Dataset parameters
@@ -27,10 +27,10 @@ if __name__ == "__main__":
     numberOfInstanceWindows = 3
     lengthOfSubWindow = 32
     numberOfGestures = 12
-    batch_size = 64
+    batch_size = 32
     epochs = 100
 
-    pc = "mac"
+    pc = "4090"
 
     if pc == "4090":
         data_dir = "/mnt/netaneldata/11G/"
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         device = torch.device("cuda:0" if use_cuda else "cpu")
 
     print(device)
-    if pc == "42090":
+    if pc == "4090":
         train_srcnn_tiny_radar(
             gestures=gestures,
             people=people,
@@ -60,7 +60,7 @@ if __name__ == "__main__":
             batch_size=batch_size,
         )
 
-    if pc == "4090":
+    if pc == "42090":
         for data_name in ["data_feat/","_row_4_col_4_d_none_u_cubic/"]:
             data_path = data_dir + data_name
             train_tiny_radar(

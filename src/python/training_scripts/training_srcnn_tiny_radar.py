@@ -87,13 +87,13 @@ def train_srcnn_tiny_radar(
                     # tiny_radar.load_state_dict(torch.load(tiny_radar_wights_path))
                     # for param in tiny_radar.parameters():
                     #     param.requires_grad = False
-                    # srcnn = SRCnn(
-                    #     num_features_1=n_feat1,
-                    #     num_features_2=n_feat2,
-                    #     kernel_size=ksize,
-                    #     activation=activation,
-                    # ).to(device)
-                    srcnn = DRLN(4)
+                    srcnn = SRCnn(
+                        num_features_1=n_feat1,
+                        num_features_2=n_feat2,
+                        kernel_size=ksize,
+                        activation=activation,
+                    ).to(device)
+                    # srcnn = DRLN(4)
                     model = CombinedSRCNNClassifier(srcnn, tiny_radar).to(device)
 
                     # models configs
