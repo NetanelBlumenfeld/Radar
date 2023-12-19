@@ -40,7 +40,7 @@ def train_srcnn_tiny_radar(
     row = 4
     col = 4
     hight_res_folder = "data_feat/"
-    low_res_folder = f"data_feat_ds_row_{row}_col_{col}_d_none_u_cubic/"
+    low_res_folder = f"_row_{row}_col_{col}_d_none_u_cubic/"
     hight_res__path = data_dir + hight_res_folder
     low_res_path = data_dir + low_res_folder
     tiny_radar_wights_path = (
@@ -57,7 +57,7 @@ def train_srcnn_tiny_radar(
                 for ksize in [(3, 3)]:
                     # TODO - better naming
                     experiment_name = f"sr_classifier/_{row}_col_{col}_d_none_u_cubic/w_tiny{w_c}_w_srcnn_{w_sr}_norm_full_train_2conv/"
-                    experiment_name += f"n_feat1_{n_feat1}_n_feat2_{n_feat2}_ksize_{ksize}_activation_{activation}/"
+                    experiment_name += f"n_feat1_{n_feat1}_n_feat2_{n_feat2}_ksize_{ksize}_activation_{activation}_loss_L1/"
                     experiment_name += f"time_{get_time_in_string()}/"
                     t_board_dir = output_dir + "tensorboard/" + experiment_name
                     save_model_dir = output_dir + "models/" + experiment_name
@@ -104,7 +104,7 @@ def train_srcnn_tiny_radar(
                     )
                     srcnn_loss = LossFunctionTinyRadarNN(
                         numberOfTimeSteps=numberOfTimeSteps,
-                        loss_function=torch.nn.MSELoss().to(device),
+                        loss_function=torch.nn.L1loss().to(device),
                     )
                     loss_func = LossFunctionSRCnnTinyRadarNN(
                         loss_func_srcnn=srcnn_loss,

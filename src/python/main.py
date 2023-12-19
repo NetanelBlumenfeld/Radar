@@ -48,7 +48,7 @@ if __name__ == "__main__":
         device = torch.device("cuda:0" if use_cuda else "cpu")
 
     print(device)
-    if pc == "40":
+    if pc == "4090":
         train_srcnn_tiny_radar(
             gestures=gestures,
             people=people,
@@ -60,9 +60,10 @@ if __name__ == "__main__":
             batch_size=batch_size,
         )
 
-    for data_name in ["_row_4_col_4_d_none_u_cubic/"]:
-        data_path = data_dir + data_name
-        train_tiny_radar(
+    if pc == "mac":
+       for data_name in ["_row_4_col_4_d_none_u_cubic/"]:
+          data_path = data_dir + data_name
+          train_tiny_radar(
             gestures=gestures,
             people=people,
             output_dir=output_dir,
@@ -71,5 +72,5 @@ if __name__ == "__main__":
             device=device,
             epochs=epochs,
             batch_size=batch_size,
-        )
+          )
     #     break
