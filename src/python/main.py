@@ -27,10 +27,11 @@ if __name__ == "__main__":
     numberOfInstanceWindows = 3
     lengthOfSubWindow = 32
     numberOfGestures = 12
-    batch_size = 128
+    batch_size = 64
     epochs = 100
 
     pc = "4090"
+
     if pc == "4090":
         data_dir = "/mnt/netaneldata/11G/"
         output_dir = "/home/aviran/netanel/Radar/outputs/"

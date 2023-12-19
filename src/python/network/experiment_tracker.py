@@ -211,10 +211,11 @@ class ProgressBar(CallbackProtocol):
         self.pbar.close()
 
     def on_epoch_end(self, epoch: int, logs: Optional[dict] = None) -> None:
+        print("\n")
+
         self.pbar.reset()
         self.out_val = ""
         self.out_train = ""
-        print("\n")
 
         self.pbar.set_description(f"Epoch {epoch}")
 
