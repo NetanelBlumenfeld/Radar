@@ -1,6 +1,6 @@
 import torch as torch
 from training_scripts.training_srcnn_tiny_radar import train_srcnn_tiny_radar
-#from training_scripts.training_tiny_radar import train_tiny_radar
+from training_scripts.training_tiny_radar import train_tiny_radar
 
 if __name__ == "__main__":
     gestures = [
@@ -17,7 +17,7 @@ if __name__ == "__main__":
         "PalmHold",
         "NoHand",
     ]
-    persons = 5
+    persons = 26
     people = list(range(1, persons, 1))
 
     # Dataset parameters
@@ -48,11 +48,7 @@ if __name__ == "__main__":
         device = torch.device("cuda:0" if use_cuda else "cpu")
 
     print(device)
-<<<<<<< HEAD
-    if pc == "4090":
-=======
-    if pc == "mac":
->>>>>>> 6add57af4717931eaaac93164279162232ad8f83
+    if pc == "40":
         train_srcnn_tiny_radar(
             gestures=gestures,
             people=people,
@@ -64,16 +60,16 @@ if __name__ == "__main__":
             batch_size=batch_size,
         )
 
-    # for data_name in ["/data_feat_ds_row_8_col_64_d_none_u_cubic/"]:
-    #     data_path = data_dir + data_name
-    #     train_tiny_radar(
-    #         gestures=gestures,
-    #         people=people,
-    #         output_dir=output_dir,
-    #         experiment_name=data_name,
-    #         data_dir=data_path,
-    #         device=device,
-    #         epochs=epochs,
-    #         batch_size=batch_size,
-    #     )
+    for data_name in ["_row_4_col_4_d_none_u_cubic/"]:
+        data_path = data_dir + data_name
+        train_tiny_radar(
+            gestures=gestures,
+            people=people,
+            output_dir=output_dir,
+            experiment_name=data_name,
+            data_dir=data_path,
+            device=device,
+            epochs=epochs,
+            batch_size=batch_size,
+        )
     #     break

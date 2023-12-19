@@ -52,11 +52,11 @@ def train_srcnn_tiny_radar(
     #         for activation in ["relu", "leaky_relu", "gelu", "tanh"]:
     #             for ksize in [(7, 7), (3, 3)]:
     for w_sr, w_c in zip([0], [1]):
-        for n_feat1, n_feat2 in zip([64], [64]):
+        for n_feat1, n_feat2 in zip([32], [32]):
             for activation in ["leaky_relu"]:
                 for ksize in [(3, 3)]:
                     # TODO - better naming
-                    experiment_name = f"sr_classifier/row_{row}_col_{col}_d_none_u_cubic/w_tiny{w_c}_w_srcnn_{w_sr}_norm_full_train/"
+                    experiment_name = f"sr_classifier/row_{row}_col_{col}_d_none_u_cubic/w_tiny{w_c}_w_srcnn_{w_sr}_norm_full_train_2conv/"
                     experiment_name += f"n_feat1_{n_feat1}_n_feat2_{n_feat2}_ksize_{ksize}_activation_{activation}/"
                     experiment_name += f"time_{get_time_in_string()}/"
                     t_board_dir = output_dir + "tensorboard/" + experiment_name

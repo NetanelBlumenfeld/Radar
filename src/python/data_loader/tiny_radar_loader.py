@@ -167,7 +167,7 @@ def down_sample_and_save(folder_path, row_factor, col_factor, interpolation=None
     windowLength = 32
     npy_folder_path = folder_path + "/data_npy"
     new_folder_path = (
-        folder_path + f"/data_feat_ds_row_{row_factor}_col_{col_factor}_d_none_u_cubic"
+        folder_path + f"/_row_{row_factor}_col_{col_factor}_d_none_u_cubic"
     )
     ensure_path_exists(new_folder_path)
     for gdx, gestureName in enumerate(gestures):
@@ -397,4 +397,4 @@ if __name__ == "__main__":
     people = list(range(1, persons, 1))
 
     path = "/mnt/netaneldata/11G"
-    down_sample_and_save(path, 8, 64, None)
+    down_sample_and_save(path, 4, 4, None)
