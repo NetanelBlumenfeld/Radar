@@ -57,7 +57,7 @@ class SRCnn(nn.Module):
 
     def forward(self, x):
         identity = x
-        x = self.relu(self.conv1(x))
+        x = self.activation(self.conv1(x))
         # x = self.activation(self.bn2(self.conv2(x)))
         x = self.tahn(self.conv3(x)) + identity
         return x
