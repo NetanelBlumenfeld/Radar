@@ -396,5 +396,5 @@ if __name__ == "__main__":
     persons = 26
     people = list(range(1, persons, 1))
 
-    path = "/mnt/netaneldata/11G"
+    path = "/Users/netanelblumenfeld/Desktop/data/11G"
     down_sample_and_save(path, 4, 4, None)

@@ -29,6 +29,7 @@ class CombinedSRCNNClassifier(nn.Module):
 
         # Process each sequence element with self.srcnn
         processed_sequence = []
+        scale = 1
         for i in range(sequence_length):
             # Extract the sequence element and add a channel dimension
             x = inputs[i].reshape(batch_size * channels, 1, H, W)
@@ -38,7 +39,7 @@ class CombinedSRCNNClassifier(nn.Module):
 
             # Remove the channel dimension and add it to the processed list
             processed_sequence.append(
-                rec_img.reshape(batch_size, channels, H * 4, W * 4)
+                rec_img.reshape(batch_size, channels, H * scale, W * scale)
             )
 
         # Recombine the sequence

@@ -59,5 +59,5 @@ class SRCnn(nn.Module):
         identity = x
         x = self.relu(self.bn1(self.conv1(x)))
         # x = self.activation(self.bn2(self.conv2(x)))
-        x = self.tahn(self.conv3(x)) + identity
+        x = self.tahn(self.conv3(x) + identity)
         return x

@@ -53,13 +53,13 @@ def train_srcnn_tiny_radar(
     #     for n_feat1, n_feat2 in zip([64, 128, 128, 64], [64, 128, 64, 32]):
     #         for activation in ["relu", "leaky_relu", "gelu", "tanh"]:
     #             for ksize in [(7, 7), (3, 3)]:
-    for w_sr, w_c in zip([0], [1]):
+    for w_sr, w_c in zip([1, 0], [1, 1]):
         for n_feat1, n_feat2 in zip([32], [32]):
             for activation in ["leaky_relu"]:
-                for ksize in [(3, 3)]:
+                for ksize in [(3, 3), (7, 7)]:
                     # TODO - better naming
                     experiment_name = f"sr_classifier/_{row}_col_{col}_d_none_u_cubic/w_tiny{w_c}_w_drln_{w_sr}_norm_-1_1_full_train_2conv/"
-                    experiment_name += f"n_feat1_{n_feat1}_n_feat2_{n_feat2}_ksize_{ksize}_activation_{activation}_loss_L1_than/"
+                    experiment_name += f"n_feat1_{n_feat1}_n_feat2_{n_feat2}_ksize_{ksize}_activation_relu_loss_L1_than/"
                     experiment_name += f"time_{get_time_in_string()}/"
                     t_board_dir = output_dir + "tensorboard/" + experiment_name
                     save_model_dir = output_dir + "models/" + experiment_name
@@ -85,16 +85,16 @@ def train_srcnn_tiny_radar(
                         numberOfGestures,
                     ).to(device)
 
-                    # tiny_radar.load_state_dict(torch.load(tiny_radar_wights_path))
-                    # for param in tiny_radar.parameters():
-                    #     param.requires_grad = False
-                    # srcnn = SRCnn(
-                    #     num_features_1=n_feat1,
-                    #     num_features_2=n_feat2,
-                    #     kernel_size=ksize,
-                    #     activation=activation,
-                    # ).to(device)
-                    srcnn = DRLN(4)
+                    tiny_radar.load_state_dict(torch.load(tiny_radar_wights_path))
+                    for param in tiny_radar.parameters():
+                        param.requires_grad = False
+                    srcnn = SRCnn(
+                        num_features_1=n_feat1,
+                        num_features_2=n_feat2,
+                        kernel_size=ksize,
+                        activation=activation,
+                    ).to(device)
+                    # srcnn = DRLN(4)
                     model = CombinedSRCNNClassifier(srcnn, tiny_radar).to(device)
 
                     # models configs
