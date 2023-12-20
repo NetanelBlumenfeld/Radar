@@ -75,6 +75,8 @@ class Runner:
             batch, labels = self.model.reshape_to_model_output(
                 batch, labels, self.device
             )
+            batch = batch.to(torch.float32)
+            labels[0] = labels[0].to(torch.float32)
             self.callbacks.on_eval_begin()
             logs["metrics"]["val"] = self.validate_batch(batch, labels)
             self.callbacks.on_eval_end(logs=logs)
