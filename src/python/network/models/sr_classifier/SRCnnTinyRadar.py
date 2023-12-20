@@ -37,7 +37,9 @@ class CombinedSRCNNClassifier(nn.Module):
             rec_img = self.srcnn(x)
 
             # Remove the channel dimension and add it to the processed list
-            processed_sequence.append(rec_img.reshape(batch_size, channels, H, W))
+            processed_sequence.append(
+                rec_img.reshape(batch_size, channels, H * 4, W * 4)
+            )
 
         # Recombine the sequence
         rec_img = torch.stack(processed_sequence, dim=0)
