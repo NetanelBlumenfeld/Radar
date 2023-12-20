@@ -64,8 +64,8 @@ def train_srcnn_tiny_radar(
                     t_board_dir = output_dir + "tensorboard/" + experiment_name
                     save_model_dir = output_dir + "models/" + experiment_name
 
-                    training_generator, val_generator = get_drnl_data_loader(
-                        # low_res_path,
+                    training_generator, val_generator = get_sr_tiny_radar_data_loader(
+                        low_res_path,
                         hight_res__path,
                         people,
                         gestures,
