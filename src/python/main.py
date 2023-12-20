@@ -27,7 +27,7 @@ if __name__ == "__main__":
     numberOfInstanceWindows = 3
     lengthOfSubWindow = 32
     numberOfGestures = 12
-    batch_size = 32
+    batch_size = 64
     epochs = 100
 
     pc = "4090"
