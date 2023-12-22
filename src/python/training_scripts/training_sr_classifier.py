@@ -92,9 +92,7 @@ def train_srcnn_tiny_radar(
                         )
 
                         # paths
-                        train_config = (
-                            f"lr_{lr}_batch_size_{batch_size}_{loss_metric.name}"
-                        )
+                        train_config = f"lr_{lr}_batch_size_{batch_size}_{loss_metric.name}_w_sr_{w_sr}_w_c_{w_c}"
                         experiment_name = os.path.join(
                             "sr_classifier",  # model type
                             model.model_name,  # model name

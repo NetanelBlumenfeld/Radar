@@ -11,14 +11,14 @@ if __name__ == "__main__":
         "PinchPinky",
         "FingerSlider",
         "FingerRub",
-        "SlowSwipeRL",
-        "FastSwipeRL",
-        "Push",
-        "Pull",
-        "PalmTilt",
-        "Circle",
-        "PalmHold",
-        "NoHand",
+        # "SlowSwipeRL",
+        # "FastSwipeRL",
+        # "Push",
+        # "Pull",
+        # "PalmTilt",
+        # "Circle",
+        # "PalmHold",
+        # "NoHand",
     ]
     persons =26
     people = list(range(1, persons, 1))
