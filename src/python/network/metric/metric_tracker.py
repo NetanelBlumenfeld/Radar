@@ -1,36 +1,30 @@
 from dataclasses import dataclass, field
+from typing import Protocol
 
 import torch
 
 
-@dataclass
-class AccuracyMetric:
-    values: list[float] = field(default_factory=list)
-    running_total: float = 0.0
-    metric_function: callable = field(default_factory=None)
-
-    @property
-    def value(self):
-        return {"acc": 100 * (sum(self.values) / self.running_total)}
+class MetricTracker(Protocol):
+    def reset(self):
+        "restart the metric tracker"
 
     def update(self, outputs: torch.Tensor, labels: torch.Tensor):
-        total, correct = self.metric_function(outputs, labels)
-        self.values.append(correct)
-        self.running_total += total
-
-    def reset(self):
-        self.values = []
-        self.running_total = 0.0
-
-
-@dataclass
-class LossMetric:
-    values: list[float] = field(default_factory=list)
-    metric_function: callable = torch.nn.CrossEntropyLoss()
-    running_total: int = 0
+        "update the metric tracker with new data"
 
     @property
-    def value(self):
+    def value(self) -> dict[str, float]:
+        "return the value of the metric tracker"
+
+
+class LossMetric:
+    def __init__(self, metric_function):
+        self.metric_function = metric_function
+        self.name = "loss_" + metric_function.name
+        self.running_total = 0
+        self.values = []
+
+    @property
+    def value(self) -> dict[str, float]:
         return {"loss": sum(self.values) / self.running_total}
 
     def reset(self):
@@ -44,17 +38,18 @@ class LossMetric:
         return loss
 
 
-@dataclass
-class LossMetricSRCnnTinyRadarNN:
-    batch_size: int
-    loss_srcnn_list: list[float] = field(default_factory=list)
-    loss_classifier_list: list[float] = field(default_factory=list)
-    values: list[float] = field(default_factory=list)
-    metric_function: callable = field(default_factory=callable)
-    running_total: int = 0
+class LossMetricSRTinyRadarNN:
+    def __init__(self, metric_function):
+        self.metric_function = metric_function
+        self.name = f"loss_{metric_function.name}"
+
+        self.loss_srcnn_list = []
+        self.loss_classifier_list = []
+        self.values = []
+        self.running_total = 0
 
     @property
-    def value(self):
+    def value(self) -> dict[str, float]:
         return {
             "loss": sum(self.values) / (self.running_total + 1e-5),
             "loss_srcnn": sum(self.loss_srcnn_list) / (self.running_total + 1e-5),
@@ -75,3 +70,23 @@ class LossMetricSRCnnTinyRadarNN:
         self.loss_srcnn_list.append(loss_srcnn.item())
         self.loss_classifier_list.append(loss_classifier.item())
         return loss
+
+
+@dataclass
+class AccuracyMetric:
+    values: list[float] = field(default_factory=list)
+    running_total: float = 0.0
+    metric_function: callable = field(default_factory=None)
+
+    @property
+    def value(self):
+        return {"acc": 100 * (sum(self.values) / self.running_total)}
+
+    def update(self, outputs: torch.Tensor, labels: torch.Tensor):
+        total, correct = self.metric_function(outputs, labels)
+        self.values.append(correct)
+        self.running_total += total
+
+    def reset(self):
+        self.values = []
+        self.running_total = 0.0

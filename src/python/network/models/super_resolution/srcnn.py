@@ -1,7 +1,9 @@
+import torch
 import torch.nn as nn
+from network.models.basic_model import BasicModel
 
 
-class SRCnn(nn.Module):
+class SRCnn(BasicModel):
     def __init__(
         self,
         num_channels=1,
@@ -9,29 +11,35 @@ class SRCnn(nn.Module):
         num_features_2=64,
         kernel_size=(3, 3),
         activation="relu",
+        base_name: str = "SRCnn",
+        only_wights: bool = False,
     ):
-        super(SRCnn, self).__init__()
+        model_name = (
+            base_name
+            + "_features_1_"
+            + str(num_features_1)
+            + "_features_2_"
+            + str(num_features_2)
+            + "_k_size_"
+            + str(kernel_size)
+            + "_activation_"
+            + str(activation)
+        )
+        super(SRCnn, self).__init__(model_name, only_wights)
+        # Define the activation function using a dictionary
+        activations = {
+            "relu": nn.ReLU(),
+            "leaky_relu": nn.LeakyReLU(0.1),
+            "sigmoid": nn.Sigmoid(),
+            "tanh": nn.Tanh(),
+            "elu": nn.ELU(),
+            "selu": nn.SELU(),
+            "gelu": nn.GELU(),
+        }
 
-        # Define the activation function
-        if activation == "relu":
-            self.activation = nn.ReLU()
-        elif activation == "leaky_relu":
-            self.activation = nn.LeakyReLU(0.2)
-        elif activation == "sigmoid":
-            self.activation = nn.Sigmoid()
-        elif activation == "tanh":
-            self.activation = nn.Tanh()
-        elif activation == "elu":
-            self.activation = nn.ELU()
-        elif activation == "selu":
-            self.activation = nn.SELU()
-        elif activation == "gelu":
-            self.activation = nn.GELU()
-        else:
-            raise ValueError("Invalid activation function")
-
-        self.relu = nn.ReLU()
-        self.tahn = nn.Tanh()
+        self.activation = activations.get(activation)
+        if self.activation is None:
+            raise ValueError(f"Invalid activation function: {activation}")
 
         # Define the layers with hyperparameters
         self.conv1 = nn.Conv2d(
@@ -55,9 +63,9 @@ class SRCnn(nn.Module):
         self.bn1 = nn.BatchNorm2d(num_features_1)
         self.bn2 = nn.BatchNorm2d(num_features_2)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         identity = x
         x = self.activation(self.conv1(x))
-        # x = self.activation(self.bn2(self.conv2(x)))
-        x = self.tahn(self.conv3(x)) + identity
+        x = self.activation(self.conv2(x))
+        x = self.activation(self.conv3(x)) + identity
         return x

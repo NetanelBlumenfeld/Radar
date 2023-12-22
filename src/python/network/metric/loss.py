@@ -1,14 +1,38 @@
+from enum import Enum
+
 import torch
+import torch.nn as nn
+
+
+class LossType(Enum):
+    L1 = "L1"
+    MSE = "MSE"
+    CrossEntropy = "CrossEntropy"
+
+
+class LossFactory:
+    loss_functions = {
+        "l1": nn.L1Loss(),
+        "mse": nn.MSELoss(),
+        "crossentropy": nn.CrossEntropyLoss(),
+    }
+
+    @staticmethod
+    def get_loss_function(name):
+        if name not in LossFactory.loss_functions:
+            raise ValueError(f"Loss function '{name}' not recognized")
+        return LossFactory.loss_functions[name]
 
 
 class LossFunctionTinyRadarNN:
     def __init__(
         self,
-        numberOfTimeSteps: int,
-        loss_function: callable = torch.nn.CrossEntropyLoss(),
+        loss_function: LossType,
+        numberOfTimeSteps: int = 5,
     ):
-        self.loss_function = loss_function
         self.numberOfTimeSteps = numberOfTimeSteps
+        self.loss_function = LossFactory.get_loss_function(loss_function.name.lower())
+        self.name = loss_function.name
 
     def __call__(self, outputs: torch.Tensor, labels: torch.Tensor):
         """
@@ -27,18 +51,19 @@ class LossFunctionTinyRadarNN:
         return loss / self.numberOfTimeSteps
 
 
-class LossFunctionSRCnnTinyRadarNN:
+class LossFunctionSRTinyRadarNN:
     def __init__(
         self,
-        loss_func_srcnn: callable = torch.nn.MSELoss(),
-        loss_func_classifier: callable = torch.nn.CrossEntropyLoss(),
+        loss_type_srcnn: LossType,
+        loss_type_classifier: LossType,
         wight_srcnn: float = 0.5,
         wight_classifier: float = 0.5,
     ):
-        self.loss_func_srcnn = loss_func_srcnn
-        self.loss_func_classifier = loss_func_classifier
+        self.loss_func_srcnn = LossFunctionTinyRadarNN(loss_type_srcnn)
+        self.loss_func_classifier = LossFunctionTinyRadarNN(loss_type_classifier)
         self.wight_srcnn = wight_srcnn
         self.wight_classifier = wight_classifier
+        self.name = f"sr_{loss_type_srcnn.name}_classifier_{loss_type_classifier.name}"
 
     def __call__(self, outputs: torch.Tensor, labels: torch.Tensor):
         """

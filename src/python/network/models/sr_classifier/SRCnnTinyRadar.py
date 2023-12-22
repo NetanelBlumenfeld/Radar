@@ -1,12 +1,20 @@
 import torch
-import torch.nn as nn
+from network.models.basic_model import BasicModel
 
 
-class CombinedSRCNNClassifier(nn.Module):
-    def __init__(self, srcnn, classifier):
-        super(CombinedSRCNNClassifier, self).__init__()
+class CombinedSRCNNClassifier(BasicModel):
+    def __init__(
+        self,
+        srcnn: BasicModel,
+        classifier: BasicModel,
+        scale_factor: int = 1,
+        only_wights: bool = False,
+    ):
+        model_name = f"sr_{srcnn.model_name}_classifier_{classifier.model_name}"
+        super(CombinedSRCNNClassifier, self).__init__(model_name, only_wights)
         self.srcnn = srcnn
         self.classifier = classifier
+        self.scale_factor = scale_factor
 
     @staticmethod
     def reshape_to_model_output(batch, labels, device):
@@ -18,18 +26,10 @@ class CombinedSRCNNClassifier(nn.Module):
         return batch, [hgit_res_imgs, true_label]
 
     def forward(self, inputs):
-        # batch_size = inputs.size(1)
-        # x = inputs.reshape(batch_size * 5 * 2, 1, 32, 492)
-
-        # rec_img = self.srcnn(x)
-        # rec_img = rec_img.reshape(5, batch_size, 2, 32, 492)
-        # y_labels_pred = self.classifier(rec_img)
-        # inputs shape: (sequence=5, batch, H, W, channels=2)
         sequence_length, batch_size, channels, H, W = inputs.size()
 
         # Process each sequence element with self.srcnn
         processed_sequence = []
-        scale = 1
         for i in range(sequence_length):
             # Extract the sequence element and add a channel dimension
             x = inputs[i].reshape(batch_size * channels, 1, H, W)
@@ -39,7 +39,9 @@ class CombinedSRCNNClassifier(nn.Module):
 
             # Remove the channel dimension and add it to the processed list
             processed_sequence.append(
-                rec_img.reshape(batch_size, channels, H * scale, W * scale)
+                rec_img.reshape(
+                    batch_size, channels, H * self.scale_factor, W * self.scale_factor
+                )
             )
 
         # Recombine the sequence

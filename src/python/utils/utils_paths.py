@@ -12,7 +12,6 @@ def ensure_path_exists(path):
     Returns:
     None
     """
-    print(path)
     if not os.path.exists(path):
         try:
             print(f"Creating directory at: {path}")  # Debugging statement
