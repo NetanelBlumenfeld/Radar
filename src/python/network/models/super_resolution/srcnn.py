@@ -65,13 +65,7 @@ class SRCnn(BasicModel):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         identity = x
-<<<<<<< HEAD
-        x = self.activation(self.bn1(self.conv1(x)))
-        x = self.activation(self.bn2(self.conv2(x)))
-        x = self.tahn(self.conv3(x)) + identity
-=======
         x = self.activation(self.conv1(x))
         x = self.activation(self.conv2(x))
         x = self.activation(self.conv3(x)) + identity
->>>>>>> 927e30c1caeed655b3eb4425f9100a06e3054c7c
         return x

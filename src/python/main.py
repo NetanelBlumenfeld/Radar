@@ -47,6 +47,8 @@ if __name__ == "__main__":
     if pc == "4090":
         high_res_dir = data_dir + "data_feat/"
         low_res_dir = data_dir + "_row_4_col_4_d_none_u_cubic/"
+        print(high_res_dir)
+        print(low_res_dir)
         train_srcnn_tiny_radar(
             high_res_dir=high_res_dir,
             low_res_dir=low_res_dir,

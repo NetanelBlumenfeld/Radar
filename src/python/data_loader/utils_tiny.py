@@ -26,6 +26,7 @@ def loadPerson(paramList):
         )
 
         # Load data gesture data from disk
+#        print(paramList.pathToFeatures + filename)
         try:
             GestureData = np.load(paramList.pathToFeatures + filename)
         except IOError:
@@ -90,6 +91,7 @@ def load_tiny_doppler_maps(
         numberOfInstanceWindows,
         lengthOfSubWindow,
     )
+    print(len(featureList))
     dataX = np.array(list(map(lambda x: x[0], featureList)))
     dataY = np.array(list(map(lambda x: x[1], featureList)))
 
