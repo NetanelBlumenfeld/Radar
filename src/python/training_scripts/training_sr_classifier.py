@@ -43,7 +43,7 @@ def train_srcnn_tiny_radar(
         for n_feat1, n_feat2 in zip([32], [32]):
             for activation in ["leaky_relu", "elu"]:
                 for ksize in [(3, 3), (7, 7)]:
-                    for l in [LossType.L1, LossType.MSE]:
+                    for loss_type in [LossType.L1, LossType.MSE]:
                         (
                             training_generator,
                             val_generator,
@@ -81,7 +81,7 @@ def train_srcnn_tiny_radar(
                             model.parameters(), lr=lr, amsgrad=True
                         )
                         loss_func = LossFunctionSRTinyRadarNN(
-                            loss_type_srcnn=l,
+                            loss_type_srcnn=loss_type,
                             loss_type_classifier=LossType.CrossEntropy,
                             wight_srcnn=w_sr,
                             wight_classifier=w_c,
