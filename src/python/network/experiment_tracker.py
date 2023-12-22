@@ -127,8 +127,8 @@ class BaseTensorBoardTracker(CallbackProtocol):
                 batch, labels = model.reshape_to_model_output(
                     batch, labels, self.device
                 )
-                batch = batch.to(torch.float32)
-                labels[0] = labels[0].to(torch.float32)
+                batch = batch
+                labels[0] = labels[0]
 
                 outputs = model(batch)
                 pred_labels = outputs[1].cpu().detach().numpy().reshape(-1, 12)
