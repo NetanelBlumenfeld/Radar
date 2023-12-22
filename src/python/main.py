@@ -26,7 +26,7 @@ if __name__ == "__main__":
     batch_size = 64
     epochs = 100
 
-    pc = "4090"
+    pc = "mac"
     output_dir, data_dir, device = "", "", None
     if pc == "4090":
         data_dir = "/mnt/netaneldata/11G/"
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         device = torch.device("cuda:0" if use_cuda else "cpu")
 
     print(device)
-    if pc == "4090":
+    if pc == "mac":
         high_res_dir = data_dir + "data_feat/"
         low_res_dir = data_dir + "_row_4_col_4_d_none_u_cubic/"
         print(high_res_dir)

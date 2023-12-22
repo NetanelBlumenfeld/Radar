@@ -75,13 +75,10 @@ def setup_classifier_dataset(
     - traindataset: Training dataset.
     - valdataset: Validation dataset.
     """
-    # Flatten the list of arrays
-    flat_dataX = np.concatenate(dataX)
-    flat_dataY = np.concatenate(dataY)
 
     # Split the dataset
     X_train, X_val, Y_train, Y_val = train_test_split(
-        flat_dataX, flat_dataY, test_size=test_size, random_state=random_state
+        dataX, dataY, test_size=test_size, random_state=random_state
     )
 
     # Generate datasets
@@ -121,9 +118,9 @@ def setup_sr_classifier_dataset(
         train_labels,
         test_labels,
     ) = train_test_split(
-        flat_low_res_imgs,
-        flat_high_res_imgs,
-        flat_labels,
+        low_res_imgs,
+        hight_res_imgs,
+        labels,
         test_size=test_size,
         random_state=random_state,
     )
