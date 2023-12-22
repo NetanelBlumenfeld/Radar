@@ -16,34 +16,34 @@ def get_time_in_string():
     return now.strftime("%Y-%m-%d_%H:%M:%S")
 
 
-class CallbackProtocol(Protocol):
+class CallbackProtocol:
     def on_train_begin(self, logs: Optional[dict] = None) -> None:
-        ...
+        pass
 
     def on_train_end(self, logs: Optional[dict] = None) -> None:
-        ...
+        pass
 
     def on_epoch_begin(self, epoch: int, logs: Optional[dict] = None) -> None:
-        ...
+        pass
 
     def on_epoch_end(self, epoch: int, logs: Optional[dict] = None) -> None:
-        ...
+        pass
 
     def on_batch_begin(
         self, batch: Optional[int] = None, logs: Optional[dict] = None
     ) -> None:
-        ...
+        pass
 
     def on_batch_end(
         self, batch: Optional[int] = None, logs: Optional[dict] = None
     ) -> None:
-        ...
+        pass
 
     def on_eval_begin(self, logs: Optional[dict] = None) -> None:
-        ...
+        pass
 
     def on_eval_end(self, logs: Optional[dict] = None) -> None:
-        ...
+        pass
 
 
 class CallbackHandler(CallbackProtocol):

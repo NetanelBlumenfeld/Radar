@@ -93,7 +93,6 @@ def load_tiny_doppler_maps(
 
     dataX = np.concatenate(list(map(lambda x: x[0], featureList)), axis=0)
     dataY = np.concatenate(list(map(lambda x: x[1], featureList)), axis=0)
-    print(dataX.shape)
 
     if pix_norm != Normalization.NONE:
         for i in range(dataX.shape[0]):
