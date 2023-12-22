@@ -1,5 +1,6 @@
 import torch as torch
 import torch.nn as nn
+from network.models.basic_model import BasicModel
 
 
 class CausalConv1D(nn.Conv1d):
@@ -58,19 +59,17 @@ class cust_TCNLayer(nn.Module):
         return result + input
 
 
-class TinyRadarNN(nn.Module):
+class TinyRadarNN(BasicModel):
     def __init__(
         self,
-        numberOfSensors,
-        numberOfRangePointsPerSensor,
-        lengthOfWindow,
-        numberOfTimeSteps,
-        numberOfGestures,
+        numberOfSensors: int = 2,
+        numberOfTimeSteps: int = 5,
+        numberOfGestures: int = 12,
+        base_name: str = "TinyRadar",
+        only_wights: bool = True,
     ):
         # Parameters that need to be consistent with the dataset
-        super(TinyRadarNN, self).__init__()
-        self.lWindow = lengthOfWindow
-        self.nRangePoints = numberOfRangePointsPerSensor
+        super(TinyRadarNN, self).__init__(base_name, only_wights)
         self.nSensors = numberOfSensors
         self.nTimeSteps = numberOfTimeSteps
         self.nGestures = numberOfGestures

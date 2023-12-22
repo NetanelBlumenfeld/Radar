@@ -16,7 +16,6 @@ def acc_tiny_radar(
         correct (float): the number of correct predictions
         total (float): the total number of predictions
     """
-    # print(outputs.shape)
     pred = outputs.reshape(-1, numberOfGestures).max(1)
     squashed_labels = labels.reshape(-1)
     total = squashed_labels.shape[0]
@@ -39,5 +38,4 @@ def acc_srcnn_tiny_radar(
         correct (float): the number of correct predictions
         total (float): the total number of predictions
     """
-    # print(outputs.shape)
     return acc_tiny_radar(outputs[1], labels[1], numberOfGestures)

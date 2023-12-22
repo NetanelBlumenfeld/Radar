@@ -1,13 +1,8 @@
 from typing import Any
 
-import numpy as np
 import torch
-from network.experiment_tracker import (
-    BaseTensorBoardTracker,
-    CallbackHandler,
-    SaveModel,
-)
-from network.metric.metric_tracker import AccuracyMetric, LossMetric
+from network.experiment_tracker import CallbackHandler
+from network.metric.metric_tracker import AccuracyMetric, MetricTracker
 from torch.utils.data.dataloader import DataLoader
 
 
@@ -19,7 +14,7 @@ class Runner:
         loader_validation: DataLoader,
         device: torch.device,
         optimizer: torch.optim.Optimizer,
-        loss_metric: LossMetric,
+        loss_metric: MetricTracker,
         acc_metric: AccuracyMetric,
         callbacks: CallbackHandler,
     ):
