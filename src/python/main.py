@@ -9,24 +9,24 @@ if __name__ == "__main__":
     gestures = [
         "PinchIndex",
         "PinchPinky",
-        # "FingerSlider",
-        # "FingerRub",
-        # "SlowSwipeRL",
-        # "FastSwipeRL",
-        # "Push",
-        # "Pull",
-        # "PalmTilt",
-        # "Circle",
-        # "PalmHold",
-        # "NoHand",
+        "FingerSlider",
+        "FingerRub",
+        "SlowSwipeRL",
+        "FastSwipeRL",
+        "Push",
+        "Pull",
+        "PalmTilt",
+        "Circle",
+        "PalmHold",
+        "NoHand",
     ]
-    persons = 2
+    persons = 26
     people = list(range(1, persons, 1))
 
     batch_size = 64
     epochs = 100
 
-    pc = "mac"
+    pc = "4090"
     output_dir, data_dir, device = "", "", None
     if pc == "4090":
         data_dir = "/mnt/netaneldata/11G/"
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         device = torch.device("cuda:0" if use_cuda else "cpu")
 
     print(device)
-    if pc == "mac":
+    if pc == "4090":
         high_res_dir = data_dir + "data_feat/"
         low_res_dir = data_dir + "_row_4_col_4_d_none_u_cubic/"
         train_srcnn_tiny_radar(
