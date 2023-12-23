@@ -1,32 +1,38 @@
 from collections import namedtuple
+from functools import partial
 
 import cv2
 import numpy as np
+from scipy.fftpack import fft, fftshift
 from utils.utils_images import Normalization, normalize_img
+from utils.utils_paths import ensure_path_exists
 
 numberOfInstanceWindows = 3
 lengthOfSubWindow = 32
 
 
-def loadPerson(paramList):
+def loadPerson(paramList, data_type: str):
     SubjectData = list()
     SubjectLabel = list()
     print(f"Doing {paramList.personIdx}")
     for gestureIdx, gestureName in enumerate(paramList.listOfGestures):
         # Create filename
-        filename = (
-            "p"
-            + str(paramList.personIdx)
-            + "/"
-            + gestureName
-            + "_1s_wl"
-            + str(paramList.lengthOfWindow)
-            + "_"
-            + "doppl.npy"
-        )
+        if data_type == "doppler":
+            filename = (
+                "p"
+                + str(paramList.personIdx)
+                + "/"
+                + gestureName
+                + "_1s_wl"
+                + str(paramList.lengthOfWindow)
+                + "_"
+                + "doppl.npy"
+            )
+        elif data_type == "npy":
+            filename = "p" + str(paramList.personIdx) + "/" + gestureName + "_1s.npy"
 
         # Load data gesture data from disk
-#        print(paramList.pathToFeatures + filename)
+        #        print(paramList.pathToFeatures + filename)
         try:
             GestureData = np.load(paramList.pathToFeatures + filename)
         except IOError:
@@ -61,6 +67,7 @@ def loadFeatures(
     listofGestures,
     numberofInstanceCopies,
     lengthOfWindow,
+    data_type,
 ) -> list:
     ParamList = namedtuple(
         "ParamList",
@@ -77,12 +84,62 @@ def loadFeatures(
                 lengthOfWindow,
             )
         )
-    featureList = list(map(loadPerson, personList))
+    loadperson = partial(loadPerson, data_type=data_type)
+    featureList = list(map(loadperson, personList))
     return featureList
 
 
-def load_tiny_doppler_maps(
-    data_dir: str, pix_norm: Normalization, people: list[int], gestures: list[str]
+def doppler_maps(x, take_abs=True, do_shift=True):
+    x_len = x.shape[0]
+    num_windows_per_instance = x.shape[1]
+    time_wind = x.shape[2]
+    num_range_points = x.shape[3]
+    num_sensors = x.shape[4]
+
+    if take_abs:
+        doppler = np.zeros(
+            (x_len, num_windows_per_instance, time_wind, num_range_points, num_sensors),
+            dtype=np.float32,
+        )  # take the absolute value, thus not complex data type
+        for i_x in range(0, x_len):
+            for i_instance in range(0, num_windows_per_instance):
+                for i_range in range(0, num_range_points):
+                    for i_sensor in range(0, num_sensors):
+                        if do_shift:
+                            doppler[i_x, i_instance, :, i_range, i_sensor] = abs(
+                                fftshift(fft(x[i_x, i_instance, :, i_range, i_sensor]))
+                            )
+                        else:
+                            doppler[i_x, i_instance, :, i_range, i_sensor] = abs(
+                                fft(x[i_x, i_instance, :, i_range, i_sensor])
+                            )
+
+    else:
+        doppler = np.zeros(
+            (x_len, num_windows_per_instance, time_wind, num_range_points, num_sensors),
+            dtype=np.complex64,
+        )  # complex value
+        for i_x in range(0, x_len):
+            for i_instance in range(0, num_windows_per_instance):
+                for i_range in range(0, num_range_points):
+                    for i_sensor in range(0, num_sensors):
+                        if do_shift:
+                            doppler[i_x, i_instance, :, i_range, i_sensor] = fftshift(
+                                fft(x[i_x, i_instance, :, i_range, i_sensor])
+                            )
+                        else:
+                            doppler[i_x, i_instance, :, i_range, i_sensor] = fft(
+                                x[i_x, i_instance, :, i_range, i_sensor]
+                            )
+    return doppler
+
+
+def load_tiny_data(
+    data_dir: str,
+    pix_norm: Normalization,
+    people: list[int],
+    gestures: list[str],
+    data_type: str,
 ) -> tuple[np.ndarray, np.ndarray]:
     featureList = loadFeatures(
         data_dir,
@@ -90,6 +147,7 @@ def load_tiny_doppler_maps(
         gestures,
         numberOfInstanceWindows,
         lengthOfSubWindow,
+        "doppler",
     )
     dataX = np.concatenate(list(map(lambda x: x[0], featureList)), axis=0)
     dataY = np.concatenate(list(map(lambda x: x[1], featureList)), axis=0)
@@ -102,7 +160,7 @@ def load_tiny_doppler_maps(
     return dataX, dataY
 
 
-def down_sample_doppler_maps(
+def down_sample_data(
     data: np.ndarray, row_factor: int, col_factor: int, original_dim: bool = False
 ) -> np.ndarray:
     def _down_sample(img: np.ndarray, row_factor: int, col_factor: int) -> np.ndarray:
@@ -138,3 +196,62 @@ def down_sample_doppler_maps(
 
                 res[i, j, :, :, k] = img
     return data
+
+
+def down_sample_and_save(
+    folder_path,
+    row_factor,
+    col_factor,
+    gestures,
+    people,
+    original_dim,
+    interpolation=None,
+):
+    """
+    Down samples all the .npy files in a data_npy folder by the given row and column factors and saves the down sampled
+    doppler-range map in a new folder with the same name as the original folder, but with the suffix
+    "_down_sample_row_{row_factor}_col_{col_factor}".
+
+    Parameters:
+    folder_path (str): The path to the folder containing the .npy files to be down sampled.
+    row_factor (int): The down sampling factor for rows.
+    col_factor (int): The down sampling factor for columns.
+
+    Returns:
+    None
+    """
+    windowLength = 32
+    npy_folder_path = folder_path + "/data_npy"
+    new_folder_path = (
+        folder_path + f"/_row_{row_factor}_col_{col_factor}_d_none_u_cubic"
+    )
+    ensure_path_exists(new_folder_path)
+    for gdx, gestureName in enumerate(gestures):
+        for pdx, person in enumerate(people):
+            path = f"{npy_folder_path}/p{person}/{gestureName}_1s.npy"
+            print(path)
+            person_folder_path = new_folder_path + f"/p{person}"
+            file_path = person_folder_path + f"/{gestureName}_1s_wl32_doppl.npy"
+
+            ensure_path_exists(person_folder_path)
+
+            x = np.load(path)
+            numberOfWindows = x.shape[0]
+            numberOfSweeps = x.shape[1]
+            numberOfRangePoints = x.shape[2]
+            numberOfSensors = x.shape[3]
+
+            numberOfSubWindows = int(numberOfSweeps / windowLength)
+
+            x = x.reshape(
+                (
+                    numberOfWindows,
+                    numberOfSubWindows,
+                    windowLength,
+                    numberOfRangePoints,
+                    numberOfSensors,
+                )
+            )
+            res = down_sample_data(x, row_factor, col_factor, original_dim)
+            res = doppler_maps(res, take_abs=True)
+            np.save(file_path, res)
