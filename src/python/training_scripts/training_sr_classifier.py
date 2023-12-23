@@ -115,7 +115,7 @@ def train_srcnn_tiny_radar(
                         )
                         saver = SaveModel(save_model_dir)
                         prog_bar = ProgressBar(
-                            training_generator, training_desc=experiment_name, verbose=1
+                            training_generator, training_desc=experiment_name, verbose=0
                         )
                         callbacks = CallbackHandler([t_board, saver, prog_bar])
                         torch.cuda.empty_cache()
