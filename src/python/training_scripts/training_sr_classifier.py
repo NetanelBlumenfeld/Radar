@@ -1,4 +1,5 @@
 import os
+from tabnanny import verbose
 from typing import Optional
 
 import torch as torch
@@ -39,7 +40,7 @@ def train_srcnn_tiny_radar(
         output_dir
         + "models/classifier/tiny_radar/data_feat/lr_0.001/time_2023-12-16_15:31:47/max_acc_model.pt"
     )
-    for w_sr, w_c in zip([1, 0], [1, 1]):
+    for w_sr, w_c in zip([0], [1]):
         for n_feat1, n_feat2 in zip([32], [32]):
             for activation in ["leaky_relu", "elu"]:
                 for ksize in [(3, 3), (7, 7)]:
@@ -114,7 +115,7 @@ def train_srcnn_tiny_radar(
                         )
                         saver = SaveModel(save_model_dir)
                         prog_bar = ProgressBar(
-                            training_generator, training_desc=experiment_name
+                            training_generator, training_desc=experiment_name, verbose=1
                         )
                         callbacks = CallbackHandler([t_board, saver, prog_bar])
                         torch.cuda.empty_cache()

@@ -183,9 +183,12 @@ class SaveModel(CallbackProtocol):
 
 
 class ProgressBar(CallbackProtocol):
-    def __init__(self, loader_train, training_desc: Optional[str] = None):
+    def __init__(
+        self, loader_train, training_desc: Optional[str] = None, verbose: int = 0
+    ):
         self.loader_train = loader_train
         self.training_desc = training_desc
+        self.verbose = verbose
         self.out_val = ""
         self.out_train = ""
 
@@ -200,51 +203,46 @@ class ProgressBar(CallbackProtocol):
         self.pbar.set_postfix_str(f"{self.out_train} {self.out_val}")
 
     def on_train_begin(self, logs: Optional[dict] = None) -> None:
-        # print(f"Start Training\n {self.training_desc}")
-        bar_format = "{l_bar}{bar}| [{n_fmt}/{total_fmt}]  {postfix}"
-        self.pbar = tqdm(
-            self.loader_train,
-            total=len(self.loader_train),
-            bar_format=bar_format,
-            ncols=200,
-        )
+        if self.verbose == 0:
+            bar_format = "{l_bar}{bar}| [{n_fmt}/{total_fmt}]  {postfix}"
+            self.pbar = tqdm(
+                self.loader_train,
+                total=len(self.loader_train),
+                bar_format=bar_format,
+                ncols=200,
+            )
+        elif self.verbose == 1:
+            print("Start training")
 
     def on_train_end(self, logs: Optional[dict] = None) -> None:
-        self.pbar.close()
+        if self.verbose == 0:
+            self.pbar.close()
 
     def on_epoch_end(self, epoch: int, logs: Optional[dict] = None) -> None:
         print("\n")
+        if self.verbose == 0:
+            self.pbar.reset()
+            self.pbar.set_description(f"Epoch {epoch}")
+        elif self.verbose == 1:
+            print(f"Epoch {epoch} - {self.out_train} {self.out_val}")
 
-        self.pbar.reset()
         self.out_val = ""
         self.out_train = ""
-
-        self.pbar.set_description(f"Epoch {epoch}")
 
     def on_batch_end(
         self, batch: Optional[int] = None, logs: Optional[dict] = None
     ) -> None:
         metrics = logs["metrics"]
         self.out_train = f"Train - {self._print_metrics(metrics)}"
-        self._update_postfix_str()
-        self.pbar.update(1)
+        if self.verbose == 0:
+            self._update_postfix_str()
+            self.pbar.update(1)
 
     def on_eval_end(self, logs: Optional[dict] = None) -> None:
         metrics = logs["metrics"]
         self.out_val = f"Val - {self._print_metrics(metrics)}"
-        self._update_postfix_str()
-
-
-class TensorBoardTrackerSRCnnTinyRadarNN(BaseTensorBoardTracker):
-    def __init__(self, log_dir: str, classes_name: list[str]):
-        super().__init__(log_dir=log_dir, classes_name=classes_name)
-
-    def add_loss(self, loss, epoch):
-        self.writer.add_scalar("total_loss/" + self.mode, loss["loss"], epoch)
-        self.writer.add_scalar("srcnn_loss/" + self.mode, loss["loss_srcnn"], epoch)
-        self.writer.add_scalar(
-            "classifier_loss/" + self.mode["loss_classifier"], loss, epoch
-        )
+        if self.verbose == 0:
+            self._update_postfix_str()
 
 
 if __name__ == "__main__":
