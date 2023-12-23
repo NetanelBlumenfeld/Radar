@@ -1,0 +1,103 @@
+import os
+
+import torch as torch
+from data_loader.tiny_radar_loader import tiny_radar_for_sr
+from network.experiment_tracker import (
+    BaseTensorBoardTracker,
+    CallbackHandler,
+    ProgressBar,
+    SaveModel,
+    get_time_in_string,
+)
+from network.metric.accuracy import acc_tiny_radar
+from network.metric.loss import LossType, SimpleLoss
+from network.metric.metric_tracker import AccuracyMetric, LossMetric
+from network.models.super_resolution.srcnn import SRCnn
+from network.runner import Runner
+from utils.utils_images import Normalization
+
+
+def train_scrnn(
+    high_res_dir: str,
+    low_res_dir: str,
+    output_dir: str,
+    gestures: list[str],
+    people: list[int],
+    device: torch.device,
+    epochs: int,
+    batch_size: int,
+):
+    lr = 0.001
+    for n_feat1, n_feat2 in zip([32], [32]):
+        for activation in ["leaky_relu", "elu"]:
+            for ksize in [(3, 3), (7, 7)]:
+                for loss_type in [LossType.L1, LossType.MSE]:
+                    (
+                        training_generator,
+                        val_generator,
+                        dataset_name,
+                    ) = tiny_radar_for_sr(
+                        high_res_dir,
+                        low_res_dir,
+                        people,
+                        gestures,
+                        batch_size,
+                        Normalization.Range_neg_1_1,
+                        test_size=0.1,
+                    )
+                    print(
+                        f"dataset name: {dataset_name}, batch size: {batch_size}, num of train and val batches {len(training_generator)} , {len(val_generator)} "
+                    )
+
+                    model = SRCnn(
+                        num_features_1=n_feat1,
+                        num_features_2=n_feat2,
+                        kernel_size=ksize,
+                        activation=activation,
+                    ).to(device)
+                    optimizer = torch.optim.Adam(
+                        model.parameters(), lr=lr, amsgrad=True
+                    )
+                    loss_criterion = SimpleLoss(loss_function=loss_type)
+                    loss_metric = LossMetric(metric_function=loss_criterion)
+                    # acc_metric = AccuracyMetric(metric_function=acc_tiny_radar)
+
+                    # paths
+                    train_config = f"lr_{lr}_batch_size_{batch_size}_{loss_metric.name}"
+                    experiment_name = os.path.join(
+                        "sr",  # model type
+                        model.model_name,  # model name
+                        dataset_name,  # dataset name
+                        train_config,  # training configuration
+                        get_time_in_string(),
+                    )
+                    t_board_dir = output_dir + "tensorboard/" + experiment_name
+                    save_model_dir = output_dir + "models/" + experiment_name
+
+                    print(f"save dir - {save_model_dir}")
+                    print(f"t_board_dir - {t_board_dir}")
+
+                    # callbacks
+                    t_board = BaseTensorBoardTracker(
+                        log_dir=t_board_dir,
+                        classes_name=gestures,
+                        best_model_path=save_model_dir,
+                    )
+                    saver = SaveModel(save_model_dir)
+                    prog_bar = ProgressBar(
+                        training_generator, training_desc=experiment_name, verbose=0
+                    )
+                    callbacks = CallbackHandler([t_board, saver, prog_bar])
+                    torch.cuda.empty_cache()
+
+                    runner = Runner(
+                        model,
+                        training_generator,
+                        val_generator,
+                        device,
+                        optimizer,
+                        loss_metric,
+                        loss_metric,
+                        callbacks,
+                    )
+                    runner.run(epochs)

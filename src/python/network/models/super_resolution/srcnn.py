@@ -63,6 +63,21 @@ class SRCnn(BasicModel):
         self.bn1 = nn.BatchNorm2d(num_features_1)
         self.bn2 = nn.BatchNorm2d(num_features_2)
 
+    @staticmethod
+    def reshape_to_model_output(low_res, high_res, device):
+        batch_size, time_steps, channels = (
+            low_res.shape[0],
+            low_res.shape[1],
+            low_res.shape[2],
+        )
+        X = low_res.reshape(
+            batch_size * time_steps * channels, 1, low_res.shape[3], low_res.shape[4]
+        )
+        y = high_res.reshape(
+            batch_size * time_steps * channels, 1, high_res.shape[3], high_res.shape[4]
+        )
+        return X.to(device), y.to(device)
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         identity = x
         x = self.activation(self.conv1(x))

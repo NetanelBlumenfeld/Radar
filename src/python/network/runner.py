@@ -15,7 +15,7 @@ class Runner:
         device: torch.device,
         optimizer: torch.optim.Optimizer,
         loss_metric: MetricTracker,
-        acc_metric: AccuracyMetric,
+        acc_metric: MetricTracker,
         callbacks: CallbackHandler,
     ):
         self.model = model

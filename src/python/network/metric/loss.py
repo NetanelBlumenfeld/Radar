@@ -24,6 +24,25 @@ class LossFactory:
         return LossFactory.loss_functions[name]
 
 
+class SimpleLoss:
+    def __init__(self, loss_function: LossType):
+        self.loss_function = LossFactory.get_loss_function(loss_function.name.lower())
+        self.name = loss_function.name
+
+    def __call__(self, outputs: torch.Tensor, labels: torch.Tensor):
+        """
+        compute loss for tiny radar classifier
+
+        Args:
+            outputs (torch.Tensor): the outputs from TinyRadarNN model
+            labels (torch.Tensor): labels for the data
+
+        Returns:
+            loss (float): the loss
+        """
+        return self.loss_function(outputs, labels)
+
+
 class LossFunctionTinyRadarNN:
     def __init__(
         self,
