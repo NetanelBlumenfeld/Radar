@@ -21,7 +21,7 @@ class SRCnn(BasicModel):
             + "_features_2_"
             + str(num_features_2)
             + "_k_size_"
-            + str(kernel_size)
+            + str(kernel_size[0])
             + "_activation_"
             + str(activation)
         )

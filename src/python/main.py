@@ -61,18 +61,18 @@ if __name__ == "__main__":
             classifier_wights=classifier_wights,
         )
 
-    if pc == "3080":
-        for data_name in ["data_feat/"]:
-            data_path = data_dir + data_name
-            train_tiny_radar(
-                data_dir=data_path,
-                output_dir=output_dir,
-                gestures=gestures,
-                people=people,
-                device=device,
-                epochs=epochs,
-                batch_size=batch_size,
-            )
+    # if pc == "3080":
+    #     for data_name in ["data_feat/"]:
+    #         data_path = data_dir + data_name
+    #         train_tiny_radar(
+    #             data_dir=data_path,
+    #             output_dir=output_dir,
+    #             gestures=gestures,
+    #             people=people,
+    #             device=device,
+    #             epochs=epochs,
+    #             batch_size=batch_size,
+    #         )
 
     if pc == "3080":
         high_res_dir = data_dir + "data_feat/"
