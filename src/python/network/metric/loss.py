@@ -8,12 +8,14 @@ class LossType(Enum):
     L1 = "L1"
     MSE = "MSE"
     CrossEntropy = "CrossEntropy"
+    Huber = "Huber"
 
 
 class LossFactory:
     loss_functions = {
         "l1": nn.L1Loss(),
         "mse": nn.MSELoss(),
+        "huber": nn.HuberLoss(),
         "crossentropy": nn.CrossEntropyLoss(),
     }
 

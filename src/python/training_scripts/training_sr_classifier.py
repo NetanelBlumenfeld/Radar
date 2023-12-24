@@ -35,16 +35,11 @@ def train_srcnn_tiny_radar(
     # Training parameters
     lr = 0.001
 
-    # paths
-    tiny_radar_wights_path = (
-        output_dir
-        + "models/classifier/tiny_radar/data_feat/lr_0.001/time_2023-12-16_15:31:47/max_acc_model.pt"
-    )
-    for w_sr, w_c in zip([0], [1]):
-        for n_feat1, n_feat2 in zip([32], [32]):
-            for loss_type in [LossType.L1, LossType.MSE]:
-                for ksize in [(3, 3), (7, 7)]:
-                    for activation in ["leaky_relu", "elu"]:
+    for n_feat1, n_feat2 in zip([32, 64], [32, 64]):
+        for ksize in [(3, 3), (7, 7)]:
+            for loss_type in [LossType.Huber, LossType.L1, LossType.MSE]:
+                for activation in ["leaky_relu", "elu"]:
+                    for w_sr, w_c in zip([0, 1], [1, 1]):
                         (
                             training_generator,
                             val_generator,
@@ -64,6 +59,7 @@ def train_srcnn_tiny_radar(
                         # loading models
                         tiny_radar = TinyRadarNN().to(device)
                         if classifier_wights is not None:
+                            tiny_radar_wights_path = output_dir + classifier_wights
                             tiny_radar.load_state_dict(
                                 torch.load(tiny_radar_wights_path)
                             )
@@ -95,7 +91,7 @@ def train_srcnn_tiny_radar(
                         # paths
                         train_config = f"lr_{lr}_batch_size_{batch_size}_{loss_metric.name}_w_sr_{w_sr}_w_c_{w_c}"
                         experiment_name = os.path.join(
-                            "sr_classifier",  # model type
+                            "sr_classifierfroze",  # model type
                             model.model_name,  # model name
                             dataset_name,  # dataset name
                             train_config,  # training configuration
