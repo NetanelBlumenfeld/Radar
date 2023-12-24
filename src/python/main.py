@@ -21,13 +21,13 @@ if __name__ == "__main__":
         "PalmHold",
         "NoHand",
     ]
-    persons = 26
+    persons = 2
     people = list(range(1, persons, 1))
 
     batch_size = 64
     epochs = 130
 
-    pc = "4090"
+    pc = "mac"
     output_dir, data_dir, device = "", "", None
     if pc == "4090":
         data_dir = "/mnt/netaneldata/11G/"
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     #             batch_size=batch_size,
     #         )
 
-    if pc == "3080":
+    if pc == "mac":
         high_res_dir = data_dir + "data_feat/"
         low_res_dir = data_dir + "_row_4_col_4_d_none_u_cubic/"
         train_scrnn(
