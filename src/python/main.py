@@ -48,7 +48,7 @@ if __name__ == "__main__":
         device = torch.device("cuda:0" if use_cuda else "cpu")
 
     print(device)
-    if pc == "4090":
+    if pc == "40903":
         high_res_dir = data_dir + "data_feat/"
         low_res_dir = data_dir + "_row_4_col_4_d_none_u_cubic/"
         classifier_wights = "models/classifier/TinyRadar/data_feat_normalization.range_neg_1_1/lr_0.001_batch_size_64_loss_CrossEntropy/2023-12-24_10:18:18max_acc_model.pt"
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     #             batch_size=batch_size,
     #         )
 
-    if pc == "3080":
+    if pc == "4090":
         high_res_dir = data_dir + "data_feat/"
         low_res_dir = data_dir + "_row_4_col_4_d_none_u_cubic/"
         train_scrnn(
