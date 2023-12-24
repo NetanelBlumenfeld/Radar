@@ -42,7 +42,7 @@ class SimpleLoss:
         Returns:
             loss (float): the loss
         """
-        return self.loss_function(outputs, labels)
+        return self.loss_function(outputs, labels) * 100
 
 
 class LossFunctionTinyRadarNN:
