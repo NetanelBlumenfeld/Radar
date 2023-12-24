@@ -277,3 +277,4 @@ if __name__ == "__main__":
 
     folder_path = "/mnt/data/Netanel/111G/11G/"
     down_sample_and_save(folder_path, 4, 4, gestures, people, True)
+ִ
