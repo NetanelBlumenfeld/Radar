@@ -1,5 +1,4 @@
 import os
-from tabnanny import verbose
 from typing import Optional
 
 import torch as torch
@@ -31,6 +30,7 @@ def train_srcnn_tiny_radar(
     epochs: int,
     batch_size: int,
     classifier_wights: Optional[str] = None,
+    verbose: int = 0,
 ):
     # Training parameters
     lr = 0.001
@@ -39,7 +39,7 @@ def train_srcnn_tiny_radar(
         for ksize in [(3, 3), (7, 7)]:
             for loss_type in [LossType.Huber, LossType.L1, LossType.MSE]:
                 for activation in ["leaky_relu", "elu"]:
-                    for w_sr, w_c in zip([0, 1], [1, 1]):
+                    for w_sr, w_c in zip([1, 0], [1, 1]):
                         (
                             training_generator,
                             val_generator,
@@ -111,7 +111,9 @@ def train_srcnn_tiny_radar(
                         )
                         saver = SaveModel(save_model_dir)
                         prog_bar = ProgressBar(
-                            training_generator, training_desc=experiment_name, verbose=0
+                            training_generator,
+                            training_desc=experiment_name,
+                            verbose=verbose,
                         )
                         callbacks = CallbackHandler([t_board, saver, prog_bar])
                         torch.cuda.empty_cache()

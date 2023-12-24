@@ -28,7 +28,10 @@ if __name__ == "__main__":
     epochs = 130
 
     pc = "4090"
+    verbose = 1
     output_dir, data_dir, device = "", "", None
+    device = torch.device("cpu")
+
     if pc == "4090":
         data_dir = "/mnt/netaneldata/11G/"
         output_dir = "/home/aviran/netanel/Radar/outputs/"
@@ -59,6 +62,7 @@ if __name__ == "__main__":
             epochs=epochs,
             batch_size=batch_size,
             classifier_wights=classifier_wights,
+            verbose=verbose,
         )
 
     # if pc == "3080":
@@ -86,4 +90,5 @@ if __name__ == "__main__":
             device=device,
             epochs=epochs,
             batch_size=batch_size,
+            verbose=verbose,
         )

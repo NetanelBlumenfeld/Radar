@@ -9,9 +9,8 @@ from network.experiment_tracker import (
     SaveModel,
     get_time_in_string,
 )
-from network.metric.accuracy import acc_tiny_radar
 from network.metric.loss import LossType, SimpleLoss
-from network.metric.metric_tracker import AccuracyMetric, LossMetric
+from network.metric.metric_tracker import LossMetric
 from network.models.super_resolution.srcnn import SRCnn
 from network.runner import Runner
 from utils.utils_images import Normalization
@@ -26,6 +25,7 @@ def train_scrnn(
     device: torch.device,
     epochs: int,
     batch_size: int,
+    verbose: int = 0,
 ):
     lr = 0.001
     for ksize in [(3, 3), (7, 7)]:
@@ -46,7 +46,7 @@ def train_scrnn(
                         test_size=0.1,
                     )
                     print(
-                        f"dataset name: {dataset_name}, batch size: {batch_size}, num of train and val batches {len(training_generator)} , {len(val_generator)} "
+                        f"dataset name: {dataset_name}, batch size: {batch_size}, num of train and val batches {len(training_generator)} , {len(val_generator)} "  # noqa
                     )
 
                     model = SRCnn(

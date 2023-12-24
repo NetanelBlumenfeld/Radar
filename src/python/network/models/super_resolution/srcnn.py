@@ -80,6 +80,8 @@ class SRCnn(BasicModel):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         identity = x
+        if self.activation is None:
+            raise ValueError("Activation function is not properly initialized.")
         x = self.activation(self.conv1(x))
         x = self.activation(self.conv2(x))
         x = self.activation(self.conv3(x)) + identity
