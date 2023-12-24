@@ -255,3 +255,25 @@ def down_sample_and_save(
             res = down_sample_data(x, row_factor, col_factor, original_dim)
             res = doppler_maps(res, take_abs=True)
             np.save(file_path, res)
+
+
+if __name__ == "__main__":
+    gestures = [
+        "PinchIndex",
+        "PinchPinky",
+        "FingerSlider",
+        "FingerRub",
+        "SlowSwipeRL",
+        "FastSwipeRL",
+        "Push",
+        "Pull",
+        "PalmTilt",
+        "Circle",
+        "PalmHold",
+        "NoHand",
+    ]
+    persons = 26
+    people = list(range(1, persons, 1))
+
+    folder_path = "/mnt/data/Netanel/111G/11G/"
+    down_sample_and_save(folder_path, 4, 4, gestures, people, True)
