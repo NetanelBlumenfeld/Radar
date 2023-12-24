@@ -10,7 +10,7 @@ from network.experiment_tracker import (
     get_time_in_string,
 )
 from network.metric.loss import LossType, SimpleLoss
-from network.metric.metric_tracker import LossMetric
+from network.metric.metric_tracker import AccuracyMetric, LossMetric
 from network.models.super_resolution.srcnn import SRCnn
 from network.runner import Runner
 from utils.utils_images import Normalization
@@ -60,7 +60,7 @@ def train_scrnn(
                     )
                     loss_criterion = SimpleLoss(loss_function=loss_type)
                     loss_metric = LossMetric(metric_function=loss_criterion)
-                    # acc_metric = AccuracyMetric(metric_function=acc_tiny_radar)
+                    acc_metric = AccuracyMetric(metric_function=torch.nn.MSELoss())
 
                     # paths
                     train_config = f"lr_{lr}_batch_size_{batch_size}_{loss_metric.name}"
@@ -97,7 +97,7 @@ def train_scrnn(
                         device,
                         optimizer,
                         loss_metric,
-                        loss_metric,
+                        acc_metric,
                         callbacks,
                     )
                     runner.run(epochs)

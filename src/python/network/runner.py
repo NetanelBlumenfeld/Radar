@@ -2,7 +2,7 @@ from typing import Any
 
 import torch
 from network.experiment_tracker import CallbackHandler
-from network.metric.metric_tracker import AccuracyMetric, MetricTracker
+from network.metric.metric_tracker import MetricTracker
 from torch.utils.data.dataloader import DataLoader
 
 
