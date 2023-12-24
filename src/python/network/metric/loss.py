@@ -68,7 +68,7 @@ class LossFunctionTinyRadarNN:
         """
         loss = 0
         for i in range(self.numberOfTimeSteps):
-            loss += self.loss_function(outputs[i], labels[i])
+            loss += self.loss_function(outputs[i], labels[i]) * 100
         return loss / self.numberOfTimeSteps
 
 

@@ -24,8 +24,8 @@ if __name__ == "__main__":
     persons = 26
     people = list(range(1, persons, 1))
 
-    batch_size = 64
-    epochs = 130
+    batch_size = 128
+    epochs = 50
 
     pc = "4090"
     verbose = 0
