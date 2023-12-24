@@ -43,7 +43,7 @@ def train_srcnn_tiny_radar(
     for w_sr, w_c in zip([0], [1]):
         for n_feat1, n_feat2 in zip([32], [32]):
             for activation in ["leaky_relu", "elu"]:
-                for ksize in [(7, 7)]:
+                for ksize in [(3, 3), (7, 7)]:
                     for loss_type in [LossType.L1, LossType.MSE]:
                         (
                             training_generator,
