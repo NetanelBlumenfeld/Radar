@@ -59,8 +59,10 @@ def train_scrnn(
                         model.parameters(), lr=lr, amsgrad=True
                     )
                     loss_criterion = SimpleLoss(loss_function=loss_type)
-                    loss_metric = LossMetric(metric_function=loss_criterion)
-                    acc_metric = AccuracyMetric(metric_function=torch.nn.MSELoss())
+                    loss_metric = LossMetric(
+                        metric_function=loss_criterion, kind="loss"
+                    )
+                    acc_metric = LossMetric(metric_function=loss_criterion, kind="acc")
 
                     # paths
                     train_config = f"lr_{lr}_batch_size_{batch_size}_{loss_metric.name}"

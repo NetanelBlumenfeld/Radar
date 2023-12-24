@@ -17,15 +17,16 @@ class MetricTracker(Protocol):
 
 
 class LossMetric:
-    def __init__(self, metric_function):
+    def __init__(self, metric_function, kind):
         self.metric_function = metric_function
-        self.name = "loss_" + metric_function.name
+        self.name = kind + "_" + metric_function.name
         self.running_total = 0
         self.values = []
+        self.kind = kind
 
     @property
     def value(self) -> dict[str, float]:
-        return {"loss": sum(self.values) / self.running_total}
+        return {self.kind: sum(self.values) / self.running_total}
 
     def reset(self):
         self.values = []
@@ -35,7 +36,8 @@ class LossMetric:
         self.running_total += 1
         loss = self.metric_function(outputs, labels)
         self.values.append(loss.item())
-        return loss
+        if self.kind == "loss":
+            return loss
 
 
 class LossMetricSRTinyRadarNN:
