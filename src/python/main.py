@@ -45,7 +45,7 @@ if __name__ == "__main__":
         device = torch.device("cuda:0" if use_cuda else "cpu")
 
     print(device)
-    if pc == "3080":
+    if pc == "33080":
         high_res_dir = data_dir + "data_feat/"
         low_res_dir = data_dir + "_row_4_col_4_d_none_u_cubic/"
         train_srcnn_tiny_radar(
@@ -59,8 +59,8 @@ if __name__ == "__main__":
             batch_size=batch_size,
         )
 
-    if pc == "mac":
-        for data_name in ["data_feat/", "_row_4_col_4_d_none_u_cubic/"]:
+    if pc == "3080":
+        for data_name in ["data_feat/"]:
             data_path = data_dir + data_name
             train_tiny_radar(
                 data_dir=data_path,
