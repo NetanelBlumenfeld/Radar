@@ -28,10 +28,10 @@ def train_scrnn(
     batch_size: int,
 ):
     lr = 0.001
-    for n_feat1, n_feat2 in zip([32], [32]):
-        for activation in ["leaky_relu", "elu"]:
-            for ksize in [(3, 3), (7, 7)]:
-                for loss_type in [LossType.L1, LossType.MSE]:
+    for ksize in [(3, 3), (7, 7)]:
+        for n_feat1, n_feat2 in zip([32, 64], [32, 64]):
+            for activation in ["leaky_relu", "elu"]:
+                for loss_type in [LossType.Huber, LossType.L1, LossType.MSE]:
                     (
                         training_generator,
                         val_generator,
