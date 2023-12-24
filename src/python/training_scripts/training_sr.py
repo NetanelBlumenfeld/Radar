@@ -27,7 +27,7 @@ def train_scrnn(
     batch_size: int,
     verbose: int = 0,
 ):
-    lr = 0.001
+    lr = 0.0005
     for ksize in [(3, 3), (7, 7)]:
         for n_feat1, n_feat2 in zip([32, 64], [32, 64]):
             for activation in ["leaky_relu", "elu"]:
