@@ -97,6 +97,8 @@ def setup_sr_dataset(
     X_train, X_val, Y_train, Y_val = train_test_split(
         dataX, dataY, test_size=test_size, random_state=random_state
     )
+    del dataX
+    del dataY
 
     # Generate datasets
     traindataset = SRDataset([X_train], [Y_train])
