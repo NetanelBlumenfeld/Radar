@@ -175,7 +175,7 @@ def down_sample_data(
 
     if original_dim:
         res = np.empty_like(data)
-        org_dim = (data.shape[2], data.shape[3])
+        org_dim = (data.shape[3], data.shape[2])
     else:
         res = np.empty(
             (
