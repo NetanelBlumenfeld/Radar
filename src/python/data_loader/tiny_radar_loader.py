@@ -10,6 +10,7 @@ from data_loader.utils_tiny import (
     down_sample_data,
     load_tiny_data,
     normalize_tiny_data,
+    normalize_tiny_data_mps,
     npy_feat_reshape,
 )
 from sklearn.model_selection import train_test_split
@@ -234,18 +235,28 @@ def tiny_radar_of_disk(
         with Pool(num_workers) as p:
             high_res = p.map(doppler_maps_mps, high_res_raw)
             low_res = p.map(doppler_maps_mps, low_res_raw)
-        high_res = np.concatenate(high_res, axis=0)
-        low_res = np.concatenate(low_res, axis=0)
+        with Pool(num_workers) as p:
+            high_res_norm = p.map(
+                lambda x: normalize_tiny_data_mps(x, pix_norm), high_res
+            )
+            low_res_norm = p.map(
+                lambda x: normalize_tiny_data_mps(x, pix_norm), low_res
+            )
+
+        high_res = np.concatenate(high_res_norm, axis=0)
+        low_res = np.concatenate(low_res_norm, axis=0)
 
     else:
         high_res = doppler_maps(high_res_raw)
         low_res = doppler_maps(low_res_raw)
+
+        if pix_norm != Normalization.NONE:
+            low_res = normalize_tiny_data(low_res, pix_norm)
+            high_res = normalize_tiny_data(high_res, pix_norm)
     del high_res_raw, low_res_raw
+
     print(low_res.shape, high_res.shape)
 
-    if pix_norm != Normalization.NONE:
-        low_res = normalize_tiny_data(low_res, pix_norm)
-        high_res = normalize_tiny_data(high_res, pix_norm)
     print("splliting data")
 
     traindataset, valdataset = setup_dataset_2(low_res, high_res, test_size)

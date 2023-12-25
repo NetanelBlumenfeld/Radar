@@ -51,6 +51,12 @@ def normalize_tiny_data(dataX, pix_norm: Normalization):
     return dataX
 
 
+def normalize_tiny_data_mps(x, pix_norm: Normalization):
+    """normalize the doppler maps of tiny radar dataset"""
+    x = normalize_img(x, pix_norm)
+    return x
+
+
 def loadPerson(paramList, data_type: str):
     SubjectData = list()
     SubjectLabel = list()
