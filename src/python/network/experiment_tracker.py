@@ -92,11 +92,18 @@ class CallbackHandler(CallbackProtocol):
 
 
 class BaseTensorBoardTracker(CallbackProtocol):
-    def __init__(self, log_dir: str, classes_name: list[str], best_model_path: str):
+    def __init__(
+        self,
+        log_dir: str,
+        classes_name: list[str],
+        best_model_path: str,
+        with_cm: bool = True,
+    ):
         ensure_path_exists(log_dir)
         self.writer = SummaryWriter(log_dir=log_dir)
         self.classes_name = classes_name
         self.best_model_path = best_model_path
+        self.with_cm = with_cm
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def _add_cm(self, trues, preds, title: str):
@@ -144,10 +151,11 @@ class BaseTensorBoardTracker(CallbackProtocol):
         model = logs["model"].to(self.device)
         models = ["max_acc_model.pt", "min_loss_model.pt"]
         data_loader = logs["data_loader"]
-        for model_name in models:
-            model.load_state_dict(torch.load(self.best_model_path + model_name))
-            preds, trues = _get_preds_for_best_models(model, data_loader)
-            self._add_cm(preds, trues, model_name.split(".")[0])
+        if self.with_cm:
+            for model_name in models:
+                model.load_state_dict(torch.load(self.best_model_path + model_name))
+                preds, trues = _get_preds_for_best_models(model, data_loader)
+                self._add_cm(preds, trues, model_name.split(".")[0])
         self.writer.close()
 
     def on_epoch_end(self, epoch: int, logs: Optional[dict] = None) -> None:

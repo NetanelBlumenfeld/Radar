@@ -1,5 +1,6 @@
 from collections import namedtuple
 from functools import partial
+from typing import Optional
 
 import cv2
 import numpy as np
@@ -11,10 +12,38 @@ numberOfInstanceWindows = 3
 lengthOfSubWindow = 32
 
 
+def npy_feat_reshape(x: np.ndarray) -> np.ndarray:
+    numberOfWindows = x.shape[0]
+    numberOfSweeps = x.shape[1]
+    numberOfRangePoints = x.shape[2]
+    numberOfSensors = x.shape[3]
+
+    numberOfSubWindows = int(numberOfSweeps / lengthOfSubWindow)
+
+    x = x.reshape(
+        (
+            numberOfWindows,
+            numberOfSubWindows,
+            lengthOfSubWindow,
+            numberOfRangePoints,
+            numberOfSensors,
+        )
+    )
+    return x
+
+
+def normalize_tiny_data(dataX, pix_norm: Normalization):
+    """normalize the doppler maps of tiny radar dataset"""
+    for i in range(dataX.shape[0]):
+        for j in range(dataX.shape[1]):
+            for k in range(dataX.shape[4]):
+                dataX[i, j, :, :, k] = normalize_img(dataX[i, j, :, :, k], pix_norm)
+    return dataX
+
+
 def loadPerson(paramList, data_type: str):
     SubjectData = list()
     SubjectLabel = list()
-    print(f"Doing {paramList.personIdx}")
     for gestureIdx, gestureName in enumerate(paramList.listOfGestures):
         # Create filename
         if data_type == "doppler":
@@ -31,8 +60,6 @@ def loadPerson(paramList, data_type: str):
         elif data_type == "npy":
             filename = "p" + str(paramList.personIdx) + "/" + gestureName + "_1s.npy"
 
-        # Load data gesture data from disk
-        #        print(paramList.pathToFeatures + filename)
         try:
             GestureData = np.load(paramList.pathToFeatures + filename)
         except IOError:
@@ -136,10 +163,9 @@ def doppler_maps(x, take_abs=True, do_shift=True):
 
 def load_tiny_data(
     data_dir: str,
-    pix_norm: Normalization,
     people: list[int],
     gestures: list[str],
-    data_type: str,
+    data_type: str = "doppler",
 ) -> tuple[np.ndarray, np.ndarray]:
     featureList = loadFeatures(
         data_dir,
@@ -147,16 +173,10 @@ def load_tiny_data(
         gestures,
         numberOfInstanceWindows,
         lengthOfSubWindow,
-        "doppler",
+        data_type,
     )
     dataX = np.concatenate(list(map(lambda x: x[0], featureList)), axis=0)
     dataY = np.concatenate(list(map(lambda x: x[1], featureList)), axis=0)
-
-    if pix_norm != Normalization.NONE:
-        for i in range(dataX.shape[0]):
-            for j in range(dataX.shape[1]):
-                for k in range(dataX.shape[4]):
-                    dataX[i, j, :, :, k] = normalize_img(dataX[i, j, :, :, k], pix_norm)
     return dataX, dataY
 
 
@@ -195,7 +215,7 @@ def down_sample_data(
                     img = _up_scale(img, org_dim)
 
                 res[i, j, :, :, k] = img
-    return data
+    return res
 
 
 def down_sample_and_save(
@@ -204,9 +224,10 @@ def down_sample_and_save(
     col_factor,
     gestures,
     people,
-    original_dim,
+    original_dim: bool,
     interpolation=None,
-):
+    save: bool = False,
+) -> Optional[tuple[list, list]]:
     """
     Down samples all the .npy files in a data_npy folder by the given row and column factors and saves the down sampled
     doppler-range map in a new folder with the same name as the original folder, but with the suffix
@@ -220,11 +241,11 @@ def down_sample_and_save(
     Returns:
     None
     """
-    windowLength = 32
     npy_folder_path = folder_path + "/data_npy"
     new_folder_path = (
         folder_path + f"/_row_{row_factor}_col_{col_factor}_d_none_u_cubic"
     )
+    low_res, high_res = [], []
     ensure_path_exists(new_folder_path)
     for gdx, gestureName in enumerate(gestures):
         for pdx, person in enumerate(people):
@@ -236,25 +257,16 @@ def down_sample_and_save(
             ensure_path_exists(person_folder_path)
 
             x = np.load(path)
-            numberOfWindows = x.shape[0]
-            numberOfSweeps = x.shape[1]
-            numberOfRangePoints = x.shape[2]
-            numberOfSensors = x.shape[3]
-
-            numberOfSubWindows = int(numberOfSweeps / windowLength)
-
-            x = x.reshape(
-                (
-                    numberOfWindows,
-                    numberOfSubWindows,
-                    windowLength,
-                    numberOfRangePoints,
-                    numberOfSensors,
-                )
-            )
+            x = npy_feat_reshape(x)
             res = down_sample_data(x, row_factor, col_factor, original_dim)
             res = doppler_maps(res, take_abs=True)
-            np.save(file_path, res)
+            if save:
+                np.save(file_path, res)
+            else:
+                low_res.append(res)
+                high_res.append(x)
+
+    return high_res, low_res
 
 
 if __name__ == "__main__":

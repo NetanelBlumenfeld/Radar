@@ -24,8 +24,8 @@ if __name__ == "__main__":
     persons = 26
     people = list(range(1, persons, 1))
 
-    batch_size = 128
-    epochs = 50
+    batch_size = 32
+    epochs = 200
 
     pc = "4090"
     verbose = 0
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     #         )
 
     if pc == "4090":
-        high_res_dir = data_dir + "data_feat/"
+        high_res_dir = data_dir + "data_npy/"
         low_res_dir = data_dir + "_row_4_col_4_d_none_u_cubic/"
         train_scrnn(
             high_res_dir=high_res_dir,
