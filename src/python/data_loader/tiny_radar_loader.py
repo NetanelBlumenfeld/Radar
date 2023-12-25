@@ -252,6 +252,7 @@ def tiny_radar_of_disk(
             low_res = normalize_tiny_data(low_res, pix_norm)
             high_res = normalize_tiny_data(high_res, pix_norm)
     print(low_res.shape, high_res.shape)
+    del high_res_raw, low_res_raw
 
     print("splliting data")
 
