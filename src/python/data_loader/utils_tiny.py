@@ -12,7 +12,7 @@ numberOfInstanceWindows = 3
 lengthOfSubWindow = 32
 
 
-def npy_feat_reshape(x: np.ndarray) -> np.ndarray:
+def npy_feat_reshape(x: np.ndarray, classifier_shape: bool = True) -> np.ndarray:
     numberOfWindows = x.shape[0]
     numberOfSweeps = x.shape[1]
     numberOfRangePoints = x.shape[2]
@@ -20,15 +20,24 @@ def npy_feat_reshape(x: np.ndarray) -> np.ndarray:
 
     numberOfSubWindows = int(numberOfSweeps / lengthOfSubWindow)
 
-    x = x.reshape(
-        (
-            numberOfWindows,
-            numberOfSubWindows,
+    if classifier_shape:
+        x = x.reshape(
+            (
+                numberOfWindows,
+                numberOfSubWindows,
+                lengthOfSubWindow,
+                numberOfRangePoints,
+                numberOfSensors,
+            )
+        )
+    else:
+        x = x.reshape(
+            numberOfWindows * numberOfSubWindows * numberOfSensors,
+            1,
             lengthOfSubWindow,
             numberOfRangePoints,
-            numberOfSensors,
         )
-    )
+        x = x.reshape(-1, lengthOfSubWindow, numberOfRangePoints)
     return x
 
 
@@ -116,13 +125,19 @@ def loadFeatures(
     return featureList
 
 
+def doppler_maps_mps(x):
+    res = np.zeros(x.shape)
+    for i in range(x.shape[1]):
+        res = abs(fftshift(fft(x[:, i])))
+    return res
+
+
 def doppler_maps(x, take_abs=True, do_shift=True):
     x_len = x.shape[0]
     num_windows_per_instance = x.shape[1]
     time_wind = x.shape[2]
     num_range_points = x.shape[3]
     num_sensors = x.shape[4]
-
     if take_abs:
         doppler = np.zeros(
             (x_len, num_windows_per_instance, time_wind, num_range_points, num_sensors),
