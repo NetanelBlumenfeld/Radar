@@ -97,15 +97,12 @@ class Drln(BasicModel):
             low_res.shape[1],
             low_res.shape[2],
         )
-        X = low_res.reshape(
-            batch_size * time_steps * channels, 1, low_res.shape[3], low_res.shape[4]
-        )
-        y = high_res.reshape(
-            batch_size * time_steps * channels, 1, high_res.shape[3], high_res.shape[4]
-        )
+        X = low_res.reshape(batch_size, 1, low_res.shape[1], low_res.shape[2])
+        y = high_res.reshape(batch_size, 1, high_res.shape[1], high_res.shape[2])
         return X.to(device), y.to(device)
 
     def forward(self, x):
+        x = x.to(torch.float32)
         x = self.head(x)
         c0 = o0 = x
         o0 = self.drln_blocks(o0)

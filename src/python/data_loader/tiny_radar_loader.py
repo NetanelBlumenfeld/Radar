@@ -241,8 +241,8 @@ def tiny_radar_of_disk(
             high_res_norm = p.map(normalize_tiny_data_mps, high_res)
             low_res_norm = p.map(normalize_tiny_data_mps, high_res)
 
-        high_res = np.concatenate(high_res_norm, axis=0)
-        low_res = np.concatenate(low_res_norm, axis=0)
+        high_res = np.array(high_res_norm)
+        low_res = np.array(low_res_norm)
 
     else:
         high_res = doppler_maps(high_res_raw)
