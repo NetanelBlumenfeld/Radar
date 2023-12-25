@@ -239,7 +239,7 @@ def tiny_radar_of_disk(
             low_res = p.map(doppler_maps_mps, low_res_raw)
         with Pool(num_workers) as p:
             high_res_norm = p.map(normalize_tiny_data_mps, high_res)
-            low_res_norm = p.map(normalize_tiny_data_mps, high_res)
+            low_res_norm = p.map(normalize_tiny_data_mps, low_res)
 
         high_res = np.array(high_res_norm)
         low_res = np.array(low_res_norm)
