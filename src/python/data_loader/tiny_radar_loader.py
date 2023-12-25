@@ -1,6 +1,13 @@
 import numpy as np
 import torch
-from data_loader.utils_tiny import load_tiny_data
+from data_loader.utils_tiny import (
+    doppler_maps,
+    down_sample_and_save,
+    down_sample_data,
+    load_tiny_data,
+    normalize_tiny_data,
+    npy_feat_reshape,
+)
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 from utils.utils_images import Normalization
@@ -187,7 +194,9 @@ def tiny_radar_for_classifier(
     pix_norm: Normalization,
     test_size: float = 0.1,
 ) -> tuple[DataLoader, DataLoader, str]:
-    dataX, dataY = load_tiny_data(data_dir, pix_norm, people, gestures, "doppler")
+    dataX, dataY = load_tiny_data(data_dir, people, gestures, "doppler")
+    if pix_norm != Normalization.NONE:
+        dataX = normalize_tiny_data(dataX, pix_norm)
     traindataset, valdataset = setup_classifier_dataset(dataX, dataY, test_size)
     trainloader = DataLoader(
         traindataset, batch_size=batch_size, shuffle=True, num_workers=1
@@ -208,10 +217,12 @@ def tiny_radar_for_sr_classifier_on_disk(
     pix_norm: Normalization,
     test_size: float = 0.1,
 ) -> tuple[DataLoader, DataLoader, str]:
-    hight_res, labels = load_tiny_data(
-        high_res_dir, pix_norm, people, gestures, "doppler"
-    )
-    low_res, _ = load_tiny_data(low_res_dir, pix_norm, people, gestures, "doppler")
+    hight_res, labels = load_tiny_data(high_res_dir, people, gestures, "doppler")
+    low_res, _ = load_tiny_data(low_res_dir, people, gestures, "doppler")
+    if pix_norm != Normalization.NONE:
+        low_res = normalize_tiny_data(low_res, pix_norm)
+        hight_res = normalize_tiny_data(hight_res, pix_norm)
+
     traindataset, valdataset = setup_sr_classifier_dataset(
         low_res, hight_res, labels, test_size
     )
@@ -222,23 +233,44 @@ def tiny_radar_for_sr_classifier_on_disk(
     return trainloader, valloader, data_set_name
 
 
-# def tiny_radar_for_sr_classifier_of_disk(
-#     high_res_dir: str,
-#     row_scale: int,
-#     col_scale: int,
-#     original_dim: bool,
-#     batch_size: int,
-#     pix_norm: Normalization,
-#     test_size: float = 0.1,
-# ) -> tuple[DataLoader, DataLoader]:
-#     hight_res, labels = load_tiny_data(high_res_dir, pix_norm)
-#     low_res = down_sample_doppler_maps(hight_res, row_scale, col_scale, original_dim)
-#     traindataset, valdataset = setup_sr_classifier_dataset(
-#         low_res, hight_res, labels, test_size
-#     )
-#     trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
-#     valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
-#     return trainloader, valloader
+def tiny_radar_of_disk(
+    data_dir: str,
+    row_factor: int,
+    col_factor: int,
+    original_dim: bool,
+    people: list[int],
+    gestures: list[str],
+    with_labels: bool,
+    batch_size: int,
+    pix_norm: Normalization,
+    test_size: float = 0.1,
+) -> tuple[DataLoader, DataLoader, str]:
+    high_res_raw, labels = load_tiny_data(
+        data_dir, people, gestures, "npy"
+    )  # loading npy data (raw)
+    high_res_raw = npy_feat_reshape(high_res_raw)  # reshape to doppler map shape
+    low_res_raw = down_sample_data(
+        high_res_raw, row_factor, col_factor, original_dim
+    )  # down sample data
+    print("Getting Doppler map for high res")
+    high_res = doppler_maps(high_res_raw)
+    print("Getting Doppler map for low res")
+    low_res = doppler_maps(low_res_raw)
+    del high_res_raw, low_res_raw
+    print(low_res.shape, high_res.shape)
+    if pix_norm != Normalization.NONE:
+        low_res = normalize_tiny_data(low_res, pix_norm)
+        high_res = normalize_tiny_data(high_res, pix_norm)
+    print("splliting data")
+
+    traindataset, valdataset = setup_sr_dataset(low_res, high_res, test_size)
+    del low_res, high_res
+    trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
+    valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
+    dataset_name = (
+        f"row_{row_factor}_col_{col_factor}_original_{original_dim}_pix_{pix_norm}"
+    )
+    return trainloader, valloader, dataset_name
 
 
 def tiny_radar_for_sr(

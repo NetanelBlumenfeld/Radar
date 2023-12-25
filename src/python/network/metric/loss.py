@@ -2,6 +2,7 @@ from enum import Enum
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 class LossType(Enum):
@@ -33,7 +34,7 @@ class SimpleLoss:
 
     def __call__(self, outputs: torch.Tensor, labels: torch.Tensor):
         """
-        compute loss for tiny radar classifier
+        compute loss
 
         Args:
             outputs (torch.Tensor): the outputs from TinyRadarNN model
@@ -42,7 +43,7 @@ class SimpleLoss:
         Returns:
             loss (float): the loss
         """
-        return self.loss_function(outputs, labels) * 100
+        return self.loss_function(outputs, labels)
 
 
 class LossFunctionTinyRadarNN:
@@ -101,3 +102,58 @@ class LossFunctionSRTinyRadarNN:
         loss_classifier = self.loss_func_classifier(outputs[1], labels[1])
         loss = self.wight_srcnn * loss_srcnn + self.wight_classifier * loss_classifier
         return loss, loss_classifier, loss_srcnn
+
+
+class SSIMLoss(nn.Module):
+    def __init__(self, C1=0.01**2, C2=0.03**2, sigma=5.0):
+        super(SSIMLoss, self).__init__()
+        self.C1 = C1
+        self.C2 = C2
+        self.sigma = sigma
+
+    def gaussian_filter(self, channel, kernel_size):
+        kernel = torch.range(-(kernel_size // 2), kernel_size // 2, dtype=torch.float32)
+        kernel = torch.exp(-0.5 * kernel**2 / self.sigma**2)
+        kernel = kernel / torch.sum(kernel)
+        kernel = kernel.unsqueeze(0).unsqueeze(0)
+        kernel = kernel.repeat(channel, 1, 1, 1)
+        return kernel
+
+    def forward(self, input1, input2):
+        # Check dimensions
+        if input1.size() != input2.size():
+            raise ValueError("Inputs must have the same dimension.")
+
+        # Gaussian filter
+        channel = input1.size(1)
+        kernel_size = int(2 * round(3 * self.sigma) + 1)
+        if kernel_size % 2 == 0:
+            raise ValueError("Odd kernel size preferred")
+        gaussian_kernel = self.gaussian_filter(channel, kernel_size)
+
+        # Ensure the input tensor is on the same device as the kernel
+        gaussian_kernel = gaussian_kernel.to(input1.device)
+
+        # Convolution
+        padding = kernel_size // 2
+        mux = F.conv2d(input1, gaussian_kernel, padding=padding, groups=channel)
+        muy = F.conv2d(input2, gaussian_kernel, padding=padding, groups=channel)
+
+        sigmax2 = (
+            F.conv2d(input1 * input1, gaussian_kernel, padding=padding, groups=channel)
+            - mux**2
+        )
+        sigmay2 = (
+            F.conv2d(input2 * input2, gaussian_kernel, padding=padding, groups=channel)
+            - muy**2
+        )
+        sigmaxy = (
+            F.conv2d(input1 * input2, gaussian_kernel, padding=padding, groups=channel)
+            - mux * muy
+        )
+
+        l = (2 * mux * muy + self.C1) / (mux**2 + muy**2 + self.C1)
+        cs = (2 * sigmaxy + self.C2) / (sigmax2 + sigmay2 + self.C2)
+
+        ssim = l * cs
+        return 1 - ssim.mean()
