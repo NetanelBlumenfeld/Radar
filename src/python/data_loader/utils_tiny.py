@@ -275,7 +275,7 @@ def down_sample_and_save(
     """
     npy_folder_path = folder_path + "/data_npy"
     new_folder_path = (
-        folder_path + f"/_row_{row_factor}_col_{col_factor}_d_none_u_cubic"
+        folder_path + f"/_row_{row_factor}_col_{col_factor}_d_orgdim_{original_dim}"
     )
     low_res, high_res = [], []
     ensure_path_exists(new_folder_path)
@@ -319,5 +319,5 @@ if __name__ == "__main__":
     persons = 26
     people = list(range(1, persons, 1))
 
-    folder_path = "/mnt/data/Netanel/111G/11G/"
+    folder_path = "/mnt/netaneldata/11G/"
     down_sample_and_save(folder_path, 4, 4, gestures, people, True)
