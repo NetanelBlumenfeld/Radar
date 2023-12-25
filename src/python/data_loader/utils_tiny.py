@@ -38,7 +38,7 @@ def npy_feat_reshape(x: np.ndarray, classifier_shape: bool = True) -> np.ndarray
             d2,
             d3,
         )
-        x = x.reshape(-1, lengthOfSubWindow, numberOfRangePoints)
+        x = x.reshape(-1, d2, d3)
     return x
 
 
