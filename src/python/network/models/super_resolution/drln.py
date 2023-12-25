@@ -102,6 +102,7 @@ class Drln(BasicModel):
         return X.to(device), y.to(device)
 
     def forward(self, x):
+        x = x.to(torch.float32)
         x = self.head(x)
         c0 = o0 = x
         o0 = self.drln_blocks(o0)

@@ -9,17 +9,17 @@ from training_scripts.training_sr_classifier import train_srcnn_tiny_radar
 if __name__ == "__main__":
     gestures = [
         "PinchIndex",
-        # "PinchPinky",
-        # "FingerSlider",
-        # "FingerRub",
-        # "SlowSwipeRL",
-        # "FastSwipeRL",
-        # "Push",
-        # "Pull",
-        # "PalmTilt",
-        # "Circle",
-        # "PalmHold",
-        # "NoHand",
+        "PinchPinky",
+        "FingerSlider",
+        "FingerRub",
+        "SlowSwipeRL",
+        "FastSwipeRL",
+        "Push",
+        "Pull",
+        "PalmTilt",
+        "Circle",
+        "PalmHold",
+        "NoHand",
     ]
     persons = 2
     people = list(range(1, persons, 1))
@@ -27,7 +27,7 @@ if __name__ == "__main__":
     batch_size = 32
     epochs = 200
 
-    pc = "mac"
+    pc = "4090"
     verbose = 0
     output_dir, data_dir, device = "", "", None
     device = torch.device("cpu")
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     #             batch_size=batch_size,
     #         )
 
-    if pc == "mac":
+    if pc == "4090":
         high_res_dir = data_dir + "data_npy/"
         low_res_dir = data_dir + "_row_4_col_4_d_none_u_cubic/"
         train_scrnn(
