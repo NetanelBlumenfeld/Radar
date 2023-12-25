@@ -1,7 +1,11 @@
+import os
+from multiprocessing import Pool
+
 import numpy as np
 import torch
 from data_loader.utils_tiny import (
     doppler_maps,
+    doppler_maps_mps,
     down_sample_and_save,
     down_sample_data,
     load_tiny_data,
@@ -211,6 +215,7 @@ def tiny_radar_of_disk(
     batch_size: int,
     pix_norm: Normalization,
     test_size: float = 0.1,
+    mps: bool = True,
 ) -> tuple[DataLoader, DataLoader, str]:
     high_res_raw, labels = load_tiny_data(
         data_dir, people, gestures, "npy"
@@ -219,12 +224,25 @@ def tiny_radar_of_disk(
     low_res_raw = down_sample_data(
         high_res_raw, row_factor, col_factor, original_dim
     )  # down sample data
-    print("Getting Doppler map for high res")
-    high_res = doppler_maps(high_res_raw)
-    print("Getting Doppler map for low res")
-    low_res = doppler_maps(low_res_raw)
+
+    print("Getting Doppler map ")
+    if mps:
+        num_workers = os.cpu_count()
+        print(f"down sampling data with {num_workers//2} cpus")
+        high_res_raw = npy_feat_reshape(high_res_raw, classifier_shape=False)
+        low_res_raw = npy_feat_reshape(low_res_raw, classifier_shape=False)
+        with Pool(num_workers) as p:
+            high_res = p.map(doppler_maps_mps, high_res_raw)
+            low_res = p.map(doppler_maps_mps, low_res_raw)
+        high_res = np.concatenate(high_res, axis=0)
+        low_res = np.concatenate(low_res, axis=0)
+
+    else:
+        high_res = doppler_maps(high_res_raw)
+        low_res = doppler_maps(low_res_raw)
     del high_res_raw, low_res_raw
     print(low_res.shape, high_res.shape)
+
     if pix_norm != Normalization.NONE:
         low_res = normalize_tiny_data(low_res, pix_norm)
         high_res = normalize_tiny_data(high_res, pix_norm)
