@@ -75,8 +75,10 @@ class SRDataset(Dataset):
     def __init__(self, low_res, hight_res):
         _x_train = np.concatenate([np.array(d) for d in low_res])
         _hight_res_y = np.concatenate([np.array(d) for d in hight_res])
-        self.x_train = np.transpose(_x_train, (0, 1, 4, 2, 3))
-        self.hight_res_y = np.transpose(_hight_res_y, (0, 1, 4, 2, 3))
+        # self.x_train = np.transpose(_x_train, (0, 1, 4, 2, 3))
+        # self.hight_res_y = np.transpose(_hight_res_y, (0, 1, 4, 2, 3))
+        self.x_train = _x_train
+        self.hight_res_y = _hight_res_y
 
     def __len__(self):
         return self.x_train.shape[0]
