@@ -97,12 +97,8 @@ class Drln(BasicModel):
             low_res.shape[1],
             low_res.shape[2],
         )
-        X = low_res.reshape(
-            batch_size * time_steps * channels, 1, low_res.shape[3], low_res.shape[4]
-        )
-        y = high_res.reshape(
-            batch_size * time_steps * channels, 1, high_res.shape[3], high_res.shape[4]
-        )
+        X = low_res.reshape(batch_size, 1, low_res.shape[1], low_res.shape[2])
+        y = high_res.reshape(batch_size, 1, high_res.shape[1], high_res.shape[2])
         return X.to(device), y.to(device)
 
     def forward(self, x):
