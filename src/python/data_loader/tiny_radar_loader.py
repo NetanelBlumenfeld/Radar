@@ -236,12 +236,8 @@ def tiny_radar_of_disk(
             high_res = p.map(doppler_maps_mps, high_res_raw)
             low_res = p.map(doppler_maps_mps, low_res_raw)
         with Pool(num_workers) as p:
-            high_res_norm = p.map(
-                lambda x: normalize_tiny_data_mps(x, pix_norm), high_res
-            )
-            low_res_norm = p.map(
-                lambda x: normalize_tiny_data_mps(x, pix_norm), low_res
-            )
+            high_res_norm = p.map(normalize_tiny_data_mps, high_res)
+            low_res_norm = p.map(normalize_tiny_data_mps, high_res)
 
         high_res = np.concatenate(high_res_norm, axis=0)
         low_res = np.concatenate(low_res_norm, axis=0)
@@ -253,8 +249,6 @@ def tiny_radar_of_disk(
         if pix_norm != Normalization.NONE:
             low_res = normalize_tiny_data(low_res, pix_norm)
             high_res = normalize_tiny_data(high_res, pix_norm)
-    del high_res_raw, low_res_raw
-
     print(low_res.shape, high_res.shape)
 
     print("splliting data")
