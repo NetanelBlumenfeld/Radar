@@ -21,10 +21,10 @@ if __name__ == "__main__":
         "PalmHold",
         "NoHand",
     ]
-    persons = 2
+    persons = 26
     people = list(range(1, persons, 1))
 
-    batch_size = 32
+    batch_size = 25
     epochs = 200
 
     pc = "4090"
