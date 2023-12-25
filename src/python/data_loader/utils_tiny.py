@@ -31,12 +31,12 @@ def npy_feat_reshape(x: np.ndarray, classifier_shape: bool = True) -> np.ndarray
             )
         )
     else:
-        print(x.shape)
+        d0, d1, d2, d3, d4 = x.shape
         x = x.reshape(
-            numberOfWindows * numberOfSubWindows * numberOfSensors,
+            d0 * d1 * d4,
             1,
-            lengthOfSubWindow,
-            numberOfRangePoints,
+            d2,
+            d3,
         )
         x = x.reshape(-1, lengthOfSubWindow, numberOfRangePoints)
     return x
