@@ -83,7 +83,7 @@ class SRDataset(Dataset):
         return self.x_train[idx], self.hight_res_y[idx]
 
 
-def setup_sr_dataset(
+def setup_dataset_2(
     dataX, dataY, test_size, random_state=42
 ) -> tuple[Dataset, Dataset]:
     """
@@ -104,8 +104,6 @@ def setup_sr_dataset(
     X_train, X_val, Y_train, Y_val = train_test_split(
         dataX, dataY, test_size=test_size, random_state=random_state
     )
-    del dataX
-    del dataY
 
     # Generate datasets
     traindataset = SRDataset([X_train], [Y_train])
@@ -114,36 +112,7 @@ def setup_sr_dataset(
     return traindataset, valdataset
 
 
-def setup_classifier_dataset(
-    dataX, dataY, test_size, random_state=42
-) -> tuple[Dataset, Dataset]:
-    """
-    Split the dataset into training and validation sets.
-
-    Parameters:
-    - dataX: List of data samples.
-    - dataY: Corresponding list of labels.
-    - test_size: Fraction of the dataset to be used as validation data.
-    - random_state: Seed for the random number generator for reproducibility.
-
-    Returns:
-    - traindataset: Training dataset.
-    - valdataset: Validation dataset.
-    """
-
-    # Split the dataset
-    X_train, X_val, Y_train, Y_val = train_test_split(
-        dataX, dataY, test_size=test_size, random_state=random_state
-    )
-
-    # Generate datasets
-    traindataset = ClassifierDataset([X_train], [Y_train])
-    valdataset = ClassifierDataset([X_val], [Y_val])
-
-    return traindataset, valdataset
-
-
-def setup_sr_classifier_dataset(
+def setup_dataset_3(
     low_res_imgs, hight_res_imgs, labels, test_size=0.1, random_state=42
 ) -> tuple[Dataset, Dataset]:
     """
@@ -197,7 +166,7 @@ def tiny_radar_for_classifier(
     dataX, dataY = load_tiny_data(data_dir, people, gestures, "doppler")
     if pix_norm != Normalization.NONE:
         dataX = normalize_tiny_data(dataX, pix_norm)
-    traindataset, valdataset = setup_classifier_dataset(dataX, dataY, test_size)
+    traindataset, valdataset = setup_dataset_2(dataX, dataY, test_size)
     trainloader = DataLoader(
         traindataset, batch_size=batch_size, shuffle=True, num_workers=1
     )
@@ -223,9 +192,7 @@ def tiny_radar_for_sr_classifier_on_disk(
         low_res = normalize_tiny_data(low_res, pix_norm)
         hight_res = normalize_tiny_data(hight_res, pix_norm)
 
-    traindataset, valdataset = setup_sr_classifier_dataset(
-        low_res, hight_res, labels, test_size
-    )
+    traindataset, valdataset = setup_dataset_3(low_res, hight_res, labels, test_size)
     trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
     valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
     data_set_name = low_res_dir.split("/")[-2] + "_" + str(pix_norm).lower()
@@ -263,7 +230,7 @@ def tiny_radar_of_disk(
         high_res = normalize_tiny_data(high_res, pix_norm)
     print("splliting data")
 
-    traindataset, valdataset = setup_sr_dataset(low_res, high_res, test_size)
+    traindataset, valdataset = setup_dataset_2(low_res, high_res, test_size)
     del low_res, high_res
     trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
     valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
@@ -284,7 +251,7 @@ def tiny_radar_for_sr(
 ) -> tuple[DataLoader, DataLoader, str]:
     hight_res, _ = load_tiny_data(high_res_dir, pix_norm, people, gestures, "doppler")
     low_res, _ = load_tiny_data(low_res_dir, pix_norm, people, gestures, "doppler")
-    traindataset, valdataset = setup_sr_dataset(low_res, hight_res, test_size)
+    traindataset, valdataset = setup_dataset_2(low_res, hight_res, test_size)
     trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
     valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
     data_set_name = low_res_dir.split("/")[-2] + "_" + str(pix_norm).lower()

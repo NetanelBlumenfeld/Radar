@@ -27,7 +27,7 @@ if __name__ == "__main__":
     batch_size = 32
     epochs = 200
 
-    pc = "mac"
+    pc = "4090"
     verbose = 0
     output_dir, data_dir, device = "", "", None
     device = torch.device("cpu")
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     #             batch_size=batch_size,
     #         )
 
-    if pc == "mac":
+    if pc == "4090":
         high_res_dir = data_dir + "data_npy/"
         low_res_dir = data_dir + "_row_4_col_4_d_none_u_cubic/"
         train_scrnn(
