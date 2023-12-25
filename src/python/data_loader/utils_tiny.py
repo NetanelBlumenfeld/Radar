@@ -55,11 +55,11 @@ def normalize_tiny_data_mps(img, pix_norm: Normalization):
     EPSILON = 1e-8
 
     """normalize the doppler maps of tiny radar dataset"""
-    if type == Normalization.NONE:
+    if pix_norm == Normalization.NONE:
         return img
-    elif type == Normalization.Range_0_1:
+    elif pix_norm == Normalization.Range_0_1:
         return (img - np.min(img)) / (np.max(img) - np.min(img) + EPSILON)
-    elif type == Normalization.Range_neg_1_1:
+    elif pix_norm == Normalization.Range_neg_1_1:
         return (img - np.min(img)) / (np.max(img) - np.min(img) + EPSILON) * 2 - 1
     else:
         raise ValueError("Unknown normalization type: " + str(type))
