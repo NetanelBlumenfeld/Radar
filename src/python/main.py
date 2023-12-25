@@ -21,7 +21,7 @@ if __name__ == "__main__":
         "PalmHold",
         "NoHand",
     ]
-    persons = 26
+    persons = 3
     people = list(range(1, persons, 1))
 
     batch_size = 25
