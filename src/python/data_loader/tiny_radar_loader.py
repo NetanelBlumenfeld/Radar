@@ -13,6 +13,7 @@ from data_loader.utils_tiny import (
     normalize_tiny_data_mps,
     npy_feat_reshape,
 )
+from scipy.fftpack import fft, fftshift, ifft, ifftshift
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 from utils.utils_images import Normalization
@@ -179,6 +180,9 @@ def tiny_radar_for_classifier(
                 sig = dataX[i, j, :, :, k]
                 low_pass_sig = np.zeros_like(sig)
                 low_pass_sig[12:20, :] = sig[12:20, :]
+                sig_time = ifft(ifftshift(low_pass_sig, axes=0), axis=0)
+                ds_sig = sig_time[::2, ::2]
+                low_pass_sig = abs(fftshift(fft(ds_sig, axis=0), axes=0))
                 dataX[i, j, :, :, k] = low_pass_sig
     traindataset, valdataset = setup_dataset_2(dataX, dataY, test_size)
     trainloader = DataLoader(
