@@ -179,16 +179,15 @@ def tiny_radar_for_classifier(
         for j in range(dataX.shape[1]):
             for k in range(dataX.shape[4]):
                 sig = dataX[i, j, :, :, k]
-                low_pass_sig = np.zeros_like(sig)
-                low_pass_sig[12:20, :] = sig[12:20, :]
-                sig_time = ifft(ifftshift(low_pass_sig, axes=0), axis=0)
-                ds_sig = sig_time[::4, ::4]
-                low_pass_sig = abs(fftshift(fft(ds_sig, axis=0), axes=0)).astype(
-                    np.float32
-                )
-                up_sig = cv2.resize(
-                    low_pass_sig, (low_pass_sig.shape[1] * 4, low_pass_sig.shape[0] * 4)
-                )
+                ds_sig = sig[::1, ::64]
+                # low_pass_sig = np.zeros_like(sig)
+                # low_pass_sig[12:20, :] = sig[12:20, :]
+                # sig_time = ifft(ifftshift(low_pass_sig, axes=0), axis=0)
+                # ds_sig = sig_time[::4, ::4]
+                # low_pass_sig = abs(fftshift(fft(ds_sig, axis=0), axes=0)).astype(
+                #     np.float32
+                # )
+                up_sig = cv2.resize(ds_sig, (ds_sig.shape[1] * 64, ds_sig.shape[0] * 1))
                 dataX[i, j, :, :, k] = up_sig
     traindataset, valdataset = setup_dataset_2(dataX, dataY, test_size)
     trainloader = DataLoader(
