@@ -24,8 +24,8 @@ if __name__ == "__main__":
     persons = 26
     people = list(range(1, persons, 1))
 
-    batch_size = 200
-    epochs = 200
+    batch_size = 64
+    epochs = 120
 
     pc = "4090"
     verbose = 1
@@ -65,18 +65,18 @@ if __name__ == "__main__":
             verbose=verbose,
         )
 
-    # if pc == "3080":
-    #     for data_name in ["data_feat/"]:
-    #         data_path = data_dir + data_name
-    #         train_tiny_radar(
-    #             data_dir=data_path,
-    #             output_dir=output_dir,
-    #             gestures=gestures,
-    #             people=people,
-    #             device=device,
-    #             epochs=epochs,
-    #             batch_size=batch_size,
-    #         )
+    if pc == "3080":
+        for data_name in ["data_feat/"]:
+            data_path = data_dir + data_name
+            train_tiny_radar(
+                data_dir=data_path,
+                output_dir=output_dir,
+                gestures=gestures,
+                people=people,
+                device=device,
+                epochs=epochs,
+                batch_size=batch_size,
+            )
 
     if pc == "4090":
         high_res_dir = data_dir + "data_npy/"
