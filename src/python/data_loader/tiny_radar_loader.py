@@ -1,6 +1,7 @@
 import os
 from multiprocessing import Pool
 
+import cv2
 import numpy as np
 import torch
 from data_loader.utils_tiny import (
@@ -171,16 +172,13 @@ def tiny_radar_for_classifier(
     pix_norm: Normalization,
     test_size: float = 0.1,
 ) -> tuple[DataLoader, DataLoader, str]:
-    _dataX, dataY = load_tiny_data(data_dir, people, gestures, "doppler")
+    dataX, dataY = load_tiny_data(data_dir, people, gestures, "doppler")
     if pix_norm != Normalization.NONE:
-        _dataX = normalize_tiny_data(_dataX, pix_norm)
-    dataX = np.zeros(
-        (_dataX.shape[0], _dataX.shape[1], 8, 123, _dataX.shape[4]), dtype=np.float32
-    )
+        dataX = normalize_tiny_data(dataX, pix_norm)
     for i in range(dataX.shape[0]):
         for j in range(dataX.shape[1]):
             for k in range(dataX.shape[4]):
-                sig = _dataX[i, j, :, :, k]
+                sig = dataX[i, j, :, :, k]
                 low_pass_sig = np.zeros_like(sig)
                 low_pass_sig[12:20, :] = sig[12:20, :]
                 sig_time = ifft(ifftshift(low_pass_sig, axes=0), axis=0)
@@ -188,7 +186,10 @@ def tiny_radar_for_classifier(
                 low_pass_sig = abs(fftshift(fft(ds_sig, axis=0), axes=0)).astype(
                     np.float32
                 )
-                dataX[i, j, :, :, k] = low_pass_sig
+                up_sig = cv2.resize(
+                    low_pass_sig, (low_pass_sig.shape[1] * 4, low_pass_sig.shape[0] * 4)
+                )
+                dataX[i, j, :, :, k] = up_sig
     traindataset, valdataset = setup_dataset_2(dataX, dataY, test_size)
     trainloader = DataLoader(
         traindataset, batch_size=batch_size, shuffle=True, num_workers=1
