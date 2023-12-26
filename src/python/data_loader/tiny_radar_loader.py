@@ -113,8 +113,8 @@ def setup_dataset_2(
     )
 
     # Generate datasets
-    traindataset = SRDataset([X_train], [Y_train])
-    valdataset = SRDataset([X_val], [Y_val])
+    traindataset = ClassifierDataset([X_train], [Y_train])
+    valdataset = ClassifierDataset([X_val], [Y_val])
 
     return traindataset, valdataset
 

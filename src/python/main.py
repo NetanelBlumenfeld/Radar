@@ -27,7 +27,7 @@ if __name__ == "__main__":
     batch_size = 64
     epochs = 120
 
-    pc = "4090"
+    pc = "3080"
     verbose = 1
     output_dir, data_dir, device = "", "", None
     device = torch.device("cpu")
