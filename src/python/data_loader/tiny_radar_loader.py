@@ -174,7 +174,9 @@ def tiny_radar_for_classifier(
     _dataX, dataY = load_tiny_data(data_dir, people, gestures, "doppler")
     if pix_norm != Normalization.NONE:
         _dataX = normalize_tiny_data(_dataX, pix_norm)
-    dataX = np.zeros((_dataX.shape[0], _dataX.shape[1], 8, 123, _dataX.shape[4]))
+    dataX = np.zeros(
+        (_dataX.shape[0], _dataX.shape[1], 8, 123, _dataX.shape[4]), dtype=np.float32
+    )
     for i in range(dataX.shape[0]):
         for j in range(dataX.shape[1]):
             for k in range(dataX.shape[4]):
