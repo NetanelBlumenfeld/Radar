@@ -23,7 +23,8 @@ from utils.utils_images import Normalization
 
 class ReconstractDataset(Dataset):
     def __init__(self, imgs):
-        imgs_high_res = doppler_maps(imgs)
+        imgs_high_res = np.concatenate([np.array(d) for d in imgs])
+        imgs_high_res = doppler_maps(imgs_high_res)
         imgs_high_res = normalize_tiny_data(imgs_high_res, Normalization.Range_0_1)
         x = down_sample_data(imgs_high_res, 4, 4, False)
         x = torch.tensor(x, dtype=torch.float32)
