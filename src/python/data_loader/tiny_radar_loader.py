@@ -19,6 +19,16 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 from utils.utils_images import Normalization
 
+# class ReconstractDataset(Dataset):
+#     def __init__(self, imgs):
+#         self.imgs = imgs.reshape(imgs.shape[0]*5*2*492 , 32)
+
+
+#     def __len__(self):
+#         return self.imgs.shape[0]
+
+#     def __getitem__(self, idx):
+
 
 class SRClassifierDataset(Dataset):
     def __init__(self, low_res, hight_resY, labelsY):
