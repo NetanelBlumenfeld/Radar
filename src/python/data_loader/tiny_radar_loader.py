@@ -183,7 +183,9 @@ def tiny_radar_for_classifier(
                 low_pass_sig[12:20, :] = sig[12:20, :]
                 sig_time = ifft(ifftshift(low_pass_sig, axes=0), axis=0)
                 ds_sig = sig_time[::4, ::4]
-                low_pass_sig = abs(fftshift(fft(ds_sig, axis=0), axes=0))
+                low_pass_sig = abs(fftshift(fft(ds_sig, axis=0), axes=0)).astype(
+                    np.float32
+                )
                 dataX[i, j, :, :, k] = low_pass_sig
     traindataset, valdataset = setup_dataset_2(dataX, dataY, test_size)
     trainloader = DataLoader(
