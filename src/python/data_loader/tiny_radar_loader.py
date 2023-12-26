@@ -178,7 +178,7 @@ def tiny_radar_for_classifier(
     for i in range(dataX.shape[0]):
         for j in range(dataX.shape[1]):
             for k in range(dataX.shape[4]):
-                sig = dataX[i, j, :, :, k]
+                sig = _dataX[i, j, :, :, k]
                 low_pass_sig = np.zeros_like(sig)
                 low_pass_sig[12:20, :] = sig[12:20, :]
                 sig_time = ifft(ifftshift(low_pass_sig, axes=0), axis=0)
