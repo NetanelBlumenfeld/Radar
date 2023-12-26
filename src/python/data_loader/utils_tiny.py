@@ -143,7 +143,7 @@ def loadFeatures(
 
 
 def doppler_maps_mps(x):
-    res = np.zeros(x.shape)
+    res = np.zeros(x.shape, dtype=np.float32)
     for i in range(x.shape[1]):
         res[:, i] = abs(fftshift(fft(x[:, i])))
     return res

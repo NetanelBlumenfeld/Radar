@@ -173,6 +173,13 @@ def tiny_radar_for_classifier(
     dataX, dataY = load_tiny_data(data_dir, people, gestures, "doppler")
     if pix_norm != Normalization.NONE:
         dataX = normalize_tiny_data(dataX, pix_norm)
+    for i in range(dataX.shape[0]):
+        for j in range(dataX.shape[1]):
+            for k in range(dataX.shape[4]):
+                sig = dataX[i, j, :, :, k]
+                low_pass_sig = np.zeros_like(sig)
+                low_pass_sig[12:20, :] = sig[12:20, :]
+                dataX[i, j, :, :, k] = low_pass_sig
     traindataset, valdataset = setup_dataset_2(dataX, dataY, test_size)
     trainloader = DataLoader(
         traindataset, batch_size=batch_size, shuffle=True, num_workers=1
