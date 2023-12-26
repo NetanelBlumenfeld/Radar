@@ -21,14 +21,14 @@ if __name__ == "__main__":
         "PalmHold",
         "NoHand",
     ]
-    persons = 3
+    persons = 26
     people = list(range(1, persons, 1))
 
-    batch_size = 25
+    batch_size = 200
     epochs = 200
 
     pc = "4090"
-    verbose = 0
+    verbose = 1
     output_dir, data_dir, device = "", "", None
     device = torch.device("cpu")
 

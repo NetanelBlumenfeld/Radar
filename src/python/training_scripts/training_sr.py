@@ -29,7 +29,7 @@ def train_scrnn(
     verbose: int = 0,
 ):
     pix_norm = Normalization.Range_0_1
-    lr = 0.0005
+    lr = 0.001
     # for ksize in [(3, 3), (7, 7)]:
     #     for n_feat1, n_feat2 in zip([32, 64], [32, 64]):
     #         for activation in ["leaky_relu", "elu"]:
