@@ -369,11 +369,7 @@ def tiny_tt(
     dataX, _ = load_tiny_data(data_dir, people, gestures, "npy")
     dataX = npy_feat_reshape(dataX)
     traindataset, valdataset = setup_dataset_2t(dataX, test_size)
-    trainloader = DataLoader(
-        traindataset, batch_size=batch_size, shuffle=True, num_workers=1
-    )
-    valloader = DataLoader(
-        valdataset, batch_size=batch_size, shuffle=True, num_workers=1
-    )
+    trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
+    valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
     data_set_name = data_dir.split("/")[-2] + "_" + str(pix_norm).lower()
     return trainloader, valloader, data_set_name
