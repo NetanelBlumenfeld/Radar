@@ -197,7 +197,7 @@ def tiny_radar_for_classifier(
                 # low_pass_sig = abs(fftshift(fft(ds_sig, axis=0), axes=0)).astype(
                 #     np.float32
                 # )
-                up_sig = cv2.resize(ds_sig, (ds_sig.shape[1] * 64, ds_sig.shape[0] * 1))
+                up_sig = cv2.resize(ds_sig, (492, ds_sig.shape[0] * 1))
                 dataX[i, j, :, :, k] = up_sig
     traindataset, valdataset = setup_dataset_2(dataX, dataY, test_size)
     trainloader = DataLoader(
