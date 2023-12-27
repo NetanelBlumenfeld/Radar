@@ -174,7 +174,7 @@ def train_drln(
     dir: str,
     output_dir: str,
     gestures: list[str],
-    people: list[int],
+    people: int,
     device: torch.device,
     epochs: int,
     batch_size: int,
@@ -194,12 +194,15 @@ def train_drln(
         pix_norm,
         test_size=0.1,
     )
+    for x, y in training_generator:
+        break
     print(
         f"dataset name: {dataset_name}, batch size: {batch_size}, num of train and val batches {len(training_generator)} , {len(val_generator)} "  # noqa
     )
+    print(f"x shape {x.shape}, y shape {y.shape}")
     model = Drln().to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, amsgrad=True)
-    loss_criterion = SimpleLoss(loss_function=LossType.L1)
+    loss_criterion = SimpleLoss(loss_function=LossType.Huber)
     loss_metric = LossMetric(metric_function=loss_criterion, kind="loss")
     acc_metric = LossMetric(metric_function=loss_criterion, kind="acc")
 
@@ -223,6 +226,7 @@ def train_drln(
         log_dir=t_board_dir,
         classes_name=gestures,
         best_model_path=save_model_dir,
+        with_cm=False,
     )
     saver = SaveModel(save_model_dir)
     prog_bar = ProgressBar(training_generator, training_desc=experiment_name, verbose=0)
