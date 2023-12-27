@@ -1,22 +1,9 @@
-import os
-from functools import partial
-from multiprocessing import Pool
-
 import cv2
 import numpy as np
 import torch
-from data_loader.tiny_loader import load_tiny_data_high_res, load_tiny_data_sr
-from data_loader.utils_tiny import (
-    doppler_maps,
-    doppler_maps_mps,
-    down_sample_and_save,
-    down_sample_data,
-    load_tiny_data,
-    normalize_tiny_data,
-    normalize_tiny_data_mps,
-    npy_feat_reshape,
-)
-from scipy.fftpack import fft, fftshift, ifft, ifftshift
+from data_loader.tiny_loader import load_tiny_data, load_tiny_data_sr
+from data_loader.utils_tiny import normalize_tiny_data
+from scipy.fftpack import fft, fftshift
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 from utils.utils_images import Normalization, down_sample_img, normalize_img
@@ -146,7 +133,7 @@ def setup_sr_data_loader(
     return trainloader, valloader
 
 
-def setup_high_res_data_loader(
+def setup_data_loader(
     y: np.ndarray, test_size: float, batch_size: int, random_state=42
 ) -> tuple[DataLoader, DataLoader]:
     """
@@ -307,67 +294,6 @@ def tiny_radar_for_sr_classifier_on_disk(
     return trainloader, valloader, data_set_name
 
 
-def tiny_radar_of_disk(
-    data_dir: str,
-    row_factor: int,
-    col_factor: int,
-    original_dim: bool,
-    people: list[int],
-    gestures: list[str],
-    with_labels: bool,
-    batch_size: int,
-    pix_norm: Normalization,
-    test_size: float = 0.1,
-    mps: bool = True,
-) -> tuple[DataLoader, DataLoader, str]:
-    high_res_raw, labels = load_tiny_data(
-        data_dir, people, gestures, "npy"
-    )  # loading npy data (raw)
-    high_res_raw = npy_feat_reshape(high_res_raw)  # reshape to doppler map shape
-    low_res_raw = down_sample_data(
-        high_res_raw, row_factor, col_factor, original_dim
-    )  # down sample data
-
-    print("Getting Doppler map ")
-    if mps:
-        num_workers = os.cpu_count()
-        print(f"down sampling data with {num_workers//2} cpus")
-        # high_res_raw = npy_feat_reshape(high_res_raw, classifier_shape=False)
-        # low_res_raw = npy_feat_reshape(low_res_raw, classifier_shape=False)
-        print(low_res_raw.shape)
-        with Pool(num_workers) as p:
-            high_res = p.map(doppler_maps_mps, high_res_raw)
-            low_res = p.map(doppler_maps_mps, low_res_raw)
-        # with Pool(num_workers) as p:
-        #     norm_func = partial(normalize_tiny_data_mps, pix_norm=pix_norm)
-        #     high_res_norm = p.map(norm_func, high_res)
-        #     low_res_norm = p.map(norm_func, low_res)
-
-        high_res = np.array(high_res, dtype=np.float32)
-        low_res = np.array(low_res, dtype=np.float32)
-
-    else:
-        high_res = doppler_maps(high_res_raw)
-        low_res = doppler_maps(low_res_raw)
-
-    if pix_norm != Normalization.NONE:
-        low_res = normalize_tiny_data(low_res, pix_norm)
-        high_res = normalize_tiny_data(high_res, pix_norm)
-    print(low_res.shape, high_res.shape)
-    del high_res_raw, low_res_raw
-
-    print("splliting data")
-
-    traindataset, valdataset = setup_dataset_2(low_res, high_res, test_size)
-    del low_res, high_res
-    trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
-    valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
-    dataset_name = (
-        f"row_{row_factor}_col_{col_factor}_original_{original_dim}_pix_{pix_norm}"
-    )
-    return trainloader, valloader, dataset_name
-
-
 def tiny_radar_for_sr(
     high_res_dir: str,
     low_res_dir: str,
@@ -387,7 +313,7 @@ def tiny_radar_for_sr(
     return trainloader, valloader, data_set_name
 
 
-def tiny_tt(
+def dataset_tiny_sr_off_disk(
     data_dir: str,
     people: int,
     gestures: list[str],
@@ -411,17 +337,18 @@ def tiny_tt(
     return trainloader, valloader, data_set_name
 
 
-def tiny_data_high_res(
+def dataset_tiny(
     data_dir: str,
     people: int,
     gestures: list[str],
     batch_size: int,
     pix_norm: Normalization,
     test_size: float = 0.05,
+    data_type: str = "npy",
 ) -> tuple[DataLoader, DataLoader, str]:
     print(f"People: {people}, Gestures: {gestures}, Batch Size: {batch_size}")
-    high_res = load_tiny_data_high_res(data_dir, people, gestures, "npy")
-    trainloader, valloader = setup_high_res_data_loader(high_res, test_size, batch_size)
+    high_res = load_tiny_data(data_dir, people, gestures, data_type)
+    trainloader, valloader = setup_data_loader(high_res, test_size, batch_size)
 
     data_set_name = data_dir.split("/")[-2] + "_" + str(pix_norm).lower()
     return trainloader, valloader, data_set_name

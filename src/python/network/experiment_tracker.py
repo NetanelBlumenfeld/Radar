@@ -1,12 +1,12 @@
 import datetime
-import os
-from typing import Optional, Protocol
+from typing import Optional
 
 import numpy as np
 import torch
 from matplotlib import pyplot as plt
+from network.models.basic_model import BasicModel
 from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
-from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard.writer import SummaryWriter
 from tqdm import tqdm
 from utils.utils_paths import ensure_path_exists
 
@@ -120,10 +120,6 @@ class BaseTensorBoardTracker(CallbackProtocol):
         cm_display.plot(cmap="Blues", values_format=".2%", ax=ax)
         self.writer.add_figure(f"confusion_matrix/{title}", cm_display.figure_, 0)
 
-    # def on_train_begin(self, logs: Optional[dict] = None) -> None:
-    # model = logs["model"]
-    # self.writer.add_graph(model, torch.rand(5, 32, 2, 32, 492)).to(self.device)
-
     def on_train_end(self, logs: Optional[dict] = None) -> None:
         """loading the best model and calculate the confusion matrix"""
 
@@ -148,6 +144,9 @@ class BaseTensorBoardTracker(CallbackProtocol):
 
             return preds, trues
 
+        if logs is None:
+            return
+
         model = logs["model"].to(self.device)
         models = ["max_acc_model.pt", "min_loss_model.pt"]
         data_loader = logs["data_loader"]
@@ -159,6 +158,8 @@ class BaseTensorBoardTracker(CallbackProtocol):
         self.writer.close()
 
     def on_epoch_end(self, epoch: int, logs: Optional[dict] = None) -> None:
+        if logs is None:
+            return
         metrics = logs["metrics"]
         for data in ["train", "val"]:
             for metric_name, metric_value in metrics[data].items():
@@ -172,22 +173,35 @@ class SaveModel(CallbackProtocol):
         self.max_val_acc = 0
         self.min_val_loss = 99999999
 
-    def _save(self, model, path):
-        torch.save(model.state_dict(), path)
+    def _save(
+        self, path: str, model: BasicModel, optimizer, epoch: int, loss: dict, acc: dict
+    ):
+        torch.save(
+            {
+                "model_state_dict": model.state_dict(),
+                "optimizer_state_dict": optimizer.state_dict(),
+                "epoch": epoch,
+                "loss": loss,
+                "acc": acc,
+            },
+            path,
+        )
         print(f"\nSaved model at - {path}")
 
-    def on_epoch_end(self, epoch: int, logs: Optional[dict] = None) -> None:
+    def on_epoch_end(self, epoch: int, optimizer, logs: Optional[dict] = None) -> None:
+        if logs is None:
+            return
         loss = logs["metrics"]["val"]["loss"]
         acc = logs["metrics"]["val"]["acc"]
         model = logs["model"]
         if acc > self.max_val_acc:
             self.max_val_acc = acc
             path = self.save_path + "max_acc_model.pt"
-            self._save(model, path)
+            self._save(path, model, optimizer, epoch, loss, acc)
         if loss < self.min_val_loss:
             self.min_val_loss = loss
             path = self.save_path + "min_loss_model.pt"
-            self._save(model, path)
+            self._save(path, model, optimizer, epoch, loss, acc)
 
 
 class ProgressBar(CallbackProtocol):
@@ -240,6 +254,8 @@ class ProgressBar(CallbackProtocol):
     def on_batch_end(
         self, batch: Optional[int] = None, logs: Optional[dict] = None
     ) -> None:
+        if logs is None:
+            return
         metrics = logs["metrics"]
         self.out_train = f"Train - {self._print_metrics(metrics)}"
         if self.verbose == 0:
@@ -247,6 +263,8 @@ class ProgressBar(CallbackProtocol):
             self.pbar.update(1)
 
     def on_eval_end(self, logs: Optional[dict] = None) -> None:
+        if logs is None:
+            return
         metrics = logs["metrics"]
         self.out_val = f"Val - {self._print_metrics(metrics)}"
         if self.verbose == 0:
@@ -254,26 +272,4 @@ class ProgressBar(CallbackProtocol):
 
 
 if __name__ == "__main__":
-    import time
-
-    from tqdm import tqdm
-
-    # Sample iterable
-    iterable = range(100)
-
-    # Custom format:
-    # - '{l_bar}': left part of the bar (includes the percentage and bar itself)
-    # - '{bar}': the progress bar
-    # - '{r_bar}': right part of the bar (includes the remaining time and iteration info)
-    # - '{postfix}': place for your custom data
-    bar_format = "{l_bar}{bar}| [{n_fmt}/{total_fmt}] {remaining}, {postfix}"
-
-    # Initialize tqdm with the custom bar format
-    with tqdm(iterable, bar_format=bar_format, ncols=200) as pbar:
-        for item in pbar:
-            # Update the postfix data with whatever dynamic information you want to display
-            pbar.set_postfix_str(f"YourData={item}", refresh=False)
-            # pbar.set_description(f"Processing {item*2}")
-            # pbar.set_description_str(f"Processing2 {item*2}")
-            # Simulate some work
-            time.sleep(0.1)
+    pass
