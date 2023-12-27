@@ -1,6 +1,6 @@
 import torch as torch
 from training_scripts.training_classifier import train_tiny_radar
-from training_scripts.training_sr import train_scrnn
+from training_scripts.training_sr import train_drln, train_scrnn
 from training_scripts.training_sr_classifier import train_srcnn_tiny_radar
 
 # from training_scripts.training_srcnn_tiny_radar import train_srcnn_tiny_radar
@@ -24,10 +24,10 @@ if __name__ == "__main__":
     persons = 26
     people = list(range(1, persons, 1))
 
-    batch_size = 200
-    epochs = 200
+    batch_size = 64
+    epochs = 120
 
-    pc = "4090"
+    pc = "3080"
     verbose = 1
     output_dir, data_dir, device = "", "", None
     device = torch.device("cpu")
@@ -65,18 +65,27 @@ if __name__ == "__main__":
             verbose=verbose,
         )
 
-    # if pc == "3080":
-    #     for data_name in ["data_feat/"]:
-    #         data_path = data_dir + data_name
-    #         train_tiny_radar(
-    #             data_dir=data_path,
-    #             output_dir=output_dir,
-    #             gestures=gestures,
-    #             people=people,
-    #             device=device,
-    #             epochs=epochs,
-    #             batch_size=batch_size,
-    #         )
+    if pc == "3080":
+        for data_name in ["data_npy/"]:
+            data_path = data_dir + data_name
+            # train_tiny_radar(
+            #     data_dir=data_path,
+            #     output_dir=output_dir,
+            #     gestures=gestures,
+            #     people=people,
+            #     device=device,
+            #     epochs=epochs,
+            #     batch_size=batch_size,
+            # )
+            train_drln(
+                dir=data_path,
+                output_dir=output_dir,
+                gestures=gestures,
+                people=people,
+                device=device,
+                epochs=epochs,
+                batch_size=batch_size,
+            )
 
     if pc == "4090":
         high_res_dir = data_dir + "data_npy/"

@@ -17,6 +17,7 @@ def npy_feat_reshape(x: np.ndarray, classifier_shape: bool = True) -> np.ndarray
     numberOfSweeps = x.shape[1]
     numberOfRangePoints = x.shape[2]
     numberOfSensors = x.shape[3]
+    lengthOfSubWindow = 32
 
     numberOfSubWindows = int(numberOfSweeps / lengthOfSubWindow)
 
@@ -52,17 +53,23 @@ def normalize_tiny_data(dataX, pix_norm: Normalization):
 
 
 def normalize_tiny_data_mps(img, pix_norm: Normalization = Normalization.Range_0_1):
-    EPSILON = 1e-8
+    def _tt(img):
+        EPSILON = 1e-8
 
-    """normalize the doppler maps of tiny radar dataset"""
-    if pix_norm == Normalization.NONE:
-        return img
-    elif pix_norm == Normalization.Range_0_1:
-        return (img - np.min(img)) / (np.max(img) - np.min(img) + EPSILON)
-    elif pix_norm == Normalization.Range_neg_1_1:
-        return (img - np.min(img)) / (np.max(img) - np.min(img) + EPSILON) * 2 - 1
-    else:
-        raise ValueError("Unknown normalization type: " + str(type))
+        """normalize the doppler maps of tiny radar dataset"""
+        if pix_norm == Normalization.NONE:
+            return img
+        elif pix_norm == Normalization.Range_0_1:
+            return (img - np.min(img)) / (np.max(img) - np.min(img) + EPSILON)
+        elif pix_norm == Normalization.Range_neg_1_1:
+            return (img - np.min(img)) / (np.max(img) - np.min(img) + EPSILON) * 2 - 1
+        else:
+            raise ValueError("Unknown normalization type: " + str(type))
+
+    for i in range(img.shape[0]):
+        for j in range(img.shape[3]):
+            img[i, :, :, j] = _tt(img[i, :, :, j])
+
     # x = normalize_img(x, pix_norm)
     # return x
 
@@ -143,9 +150,10 @@ def loadFeatures(
 
 
 def doppler_maps_mps(x):
-    res = np.zeros(x.shape)
-    for i in range(x.shape[1]):
-        res[:, i] = abs(fftshift(fft(x[:, i])))
+    res = np.zeros(x.shape, dtype=np.float32)
+    for i in range(x.shape[0]):
+        for j in range(x.shape[3]):
+            res[i, :, :, j] = abs(fftshift(fft(x[i, :, :, j], axis=0), axes=0))
     return res
 
 
@@ -162,16 +170,17 @@ def doppler_maps(x, take_abs=True, do_shift=True):
         )  # take the absolute value, thus not complex data type
         for i_x in range(0, x_len):
             for i_instance in range(0, num_windows_per_instance):
-                for i_range in range(0, num_range_points):
-                    for i_sensor in range(0, num_sensors):
-                        if do_shift:
-                            doppler[i_x, i_instance, :, i_range, i_sensor] = abs(
-                                fftshift(fft(x[i_x, i_instance, :, i_range, i_sensor]))
+                for i_sensor in range(0, num_sensors):
+                    if do_shift:
+                        doppler[i_x, i_instance, :, :, i_sensor] = abs(
+                            fftshift(
+                                fft(x[i_x, i_instance, :, :, i_sensor], axis=0), axes=0
                             )
-                        else:
-                            doppler[i_x, i_instance, :, i_range, i_sensor] = abs(
-                                fft(x[i_x, i_instance, :, i_range, i_sensor])
-                            )
+                        )
+                    else:
+                        doppler[i_x, i_instance, :, i_range, i_sensor] = abs(
+                            fft(x[i_x, i_instance, :, i_range, i_sensor])
+                        )
 
     else:
         doppler = np.zeros(

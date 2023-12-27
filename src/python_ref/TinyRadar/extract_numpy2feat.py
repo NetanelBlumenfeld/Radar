@@ -24,9 +24,8 @@
 # limitations under the License.
 
 
-import os
-
 import numpy as np
+import os
 from featureextraction import *
 from listutils import *
 

@@ -42,11 +42,13 @@ def train_tiny_radar(
         model = TinyRadarNN().to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=lr, amsgrad=True)
         loss_criterion = LossFunctionTinyRadarNN(LossType.CrossEntropy)
-        loss_metric = LossMetric(metric_function=loss_criterion)
+        loss_metric = LossMetric(metric_function=loss_criterion, kind="loss")
         acc_metric = AccuracyMetric(metric_function=acc_tiny_radar)
 
         # paths
-        train_config = f"lr_{lr}_batch_size_{batch_size}_{loss_metric.name}"
+        train_config = (
+            f"lr_{lr}_batch_size_{batch_size}_{loss_metric.name}_with_lowpass"
+        )
         experiment_name = os.path.join(
             "classifier",  # model type
             model.model_name,  # model name

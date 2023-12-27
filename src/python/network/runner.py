@@ -81,7 +81,7 @@ class Runner:
         self.optimizer.zero_grad()
         outputs = self.model(batch)
         loss = self.loss_metric.update(outputs, labels)
-        loss.backward()
+        loss.backward()  # type: ignore
         self.optimizer.step()
         self.acc_metric.update(outputs, labels)
         return self.loss_metric.value | self.acc_metric.value
