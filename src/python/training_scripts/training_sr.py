@@ -1,7 +1,12 @@
 import os
 
 import torch as torch
-from data_loader.tiny_radar_loader import tiny_radar_for_sr, tiny_radar_of_disk, tiny_tt
+from data_loader.tiny_radar_loader import (
+    tiny_data_high_res,
+    tiny_radar_for_sr,
+    tiny_radar_of_disk,
+    tiny_tt,
+)
 from network.experiment_tracker import (
     BaseTensorBoardTracker,
     CallbackHandler,
@@ -172,6 +177,7 @@ def train_scrnn(
 
 def train_drln(
     dir: str,
+    pc: str,
     output_dir: str,
     gestures: list[str],
     people: int,
@@ -182,18 +188,32 @@ def train_drln(
 ):
     pix_norm = Normalization.Range_0_1
     lr = 0.0005
-    (
-        training_generator,
-        val_generator,
-        dataset_name,
-    ) = tiny_tt(
-        dir,
-        people,
-        gestures,
-        batch_size,
-        pix_norm,
-        test_size=0.1,
-    )
+    if pc == "4090":
+        (
+            training_generator,
+            val_generator,
+            dataset_name,
+        ) = tiny_tt(
+            dir,
+            people,
+            gestures,
+            batch_size,
+            pix_norm,
+            test_size=0.1,
+        )
+    else:
+        (
+            training_generator,
+            val_generator,
+            dataset_name,
+        ) = tiny_data_high_res(
+            dir,
+            people,
+            gestures,
+            batch_size,
+            pix_norm,
+            test_size=0.1,
+        )
     for x, y in training_generator:
         break
     print(

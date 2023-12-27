@@ -26,7 +26,7 @@ if __name__ == "__main__":
     batch_size = 128
     epochs = 200
 
-    pc = "4090"
+    pc = "3080"
     verbose = 1
     output_dir, data_dir, device = "", "", None
     device = torch.device("cpu")
@@ -64,9 +64,10 @@ if __name__ == "__main__":
             verbose=verbose,
         )
 
-    if pc == "4090":
+    if pc == "3080":
         train_drln(
             dir=data_dir,
+            pc=pc,
             output_dir=output_dir,
             gestures=gestures,
             people=people,
