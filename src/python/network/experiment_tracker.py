@@ -204,7 +204,7 @@ class ProgressBar(CallbackProtocol):
         res = ""
         for data in ["train", "val"]:
             for metric_name, metric_value in metrics[data].items():
-                res += f"{metric_name}: {metric_value:.2f} "
+                res += f"{metric_name}: {metric_value:.4f} "
         return res
 
     def _update_postfix_str(self):
