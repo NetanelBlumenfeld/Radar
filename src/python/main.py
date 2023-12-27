@@ -23,7 +23,7 @@ if __name__ == "__main__":
     ]
     people = 26
 
-    batch_size = 250
+    batch_size = 128
     epochs = 200
 
     pc = "4090"

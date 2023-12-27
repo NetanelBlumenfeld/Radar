@@ -181,7 +181,7 @@ def train_drln(
     verbose: int = 0,
 ):
     pix_norm = Normalization.Range_0_1
-    lr = 0.001
+    lr = 0.0005
     (
         training_generator,
         val_generator,
