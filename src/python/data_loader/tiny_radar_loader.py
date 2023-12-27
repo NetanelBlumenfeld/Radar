@@ -369,6 +369,7 @@ def tiny_tt(
     pix_norm: Normalization,
     test_size: float = 0.05,
 ) -> tuple[DataLoader, DataLoader, str]:
+    print(f"People: {people}, Gestures: {gestures}, Batch Size: {batch_size}")
     high_res, low_res = load_tiny_data_sr(
         data_dir=data_dir,
         people=people,
