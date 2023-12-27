@@ -200,9 +200,9 @@ def train_drln(
         f"dataset name: {dataset_name}, batch size: {batch_size}, num of train and val batches {len(training_generator)} , {len(val_generator)} "  # noqa
     )
     print(f"x shape {x.shape}, y shape {y.shape}")
-    model = Drln().to(device)
+    model = Drln(2).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, amsgrad=True)
-    loss_criterion = SimpleLoss(loss_function=LossType.Huber)
+    loss_criterion = SimpleLoss(loss_function=LossType.L1)
     loss_metric = LossMetric(metric_function=loss_criterion, kind="loss")
     acc_metric = LossMetric(metric_function=loss_criterion, kind="acc")
 
