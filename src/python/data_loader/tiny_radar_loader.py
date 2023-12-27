@@ -5,6 +5,7 @@ from multiprocessing import Pool
 import cv2
 import numpy as np
 import torch
+from data_loader.tiny_loader import load_tiny_data_sr
 from data_loader.utils_tiny import (
     doppler_maps,
     doppler_maps_mps,
@@ -103,24 +104,22 @@ class ClassifierDataset(Dataset):
 
 class SRDataset(Dataset):
     def __init__(self, low_res, hight_res):
-        _x_train = np.concatenate([np.array(d) for d in low_res])
-        _hight_res_y = np.concatenate([np.array(d) for d in hight_res])
-        # self.x_train = np.transpose(_x_train, (0, 1, 4, 2, 3))
-        # self.hight_res_y = np.transpose(_hight_res_y, (0, 1, 4, 2, 3))
-        self.x_train = _x_train
-        self.hight_res_y = _hight_res_y
+        self.x = np.expand_dims(low_res, axis=1)
+        self.y = np.expand_dims(hight_res, axis=1)
 
     def __len__(self):
-        return self.x_train.shape[0]
+        return self.x.shape[0]
 
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        return self.x_train[idx], self.hight_res_y[idx]
+        return self.x[idx], self.y[idx]
 
 
-def setup_dataset_2t(dataX, test_size, random_state=42) -> tuple[Dataset, Dataset]:
+def setup_sr_data_loader(
+    X: np.ndarray, y: np.ndarray, test_size: float, batch_size: int, random_state=42
+) -> tuple[DataLoader, DataLoader]:
     """
     Split the dataset into training and validation sets.
 
@@ -136,15 +135,19 @@ def setup_dataset_2t(dataX, test_size, random_state=42) -> tuple[Dataset, Datase
     """
 
     # Split the dataset
-    X_train, X_val = train_test_split(
-        dataX, test_size=test_size, random_state=random_state
+    X_train, X_val, Y_train, Y_val = train_test_split(
+        X, y, test_size=test_size, random_state=random_state
     )
 
     # Generate datasets
-    traindataset = ReconstractDataset([X_train])
-    valdataset = ReconstractDataset([X_val])
+    traindataset = SRDataset(X_train, Y_train)
+    del X_train, Y_train
+    valdataset = SRDataset(X_val, Y_val)
+    del X_val, Y_val
+    trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
+    valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
 
-    return traindataset, valdataset
+    return trainloader, valloader
 
 
 def setup_dataset_2(
@@ -360,16 +363,22 @@ def tiny_radar_for_sr(
 
 def tiny_tt(
     data_dir: str,
-    people: list[int],
+    people: int,
     gestures: list[str],
     batch_size: int,
     pix_norm: Normalization,
-    test_size: float = 0.1,
+    test_size: float = 0.05,
 ) -> tuple[DataLoader, DataLoader, str]:
-    dataX, _ = load_tiny_data(data_dir, people, gestures, "npy")
-    dataX = npy_feat_reshape(dataX)
-    traindataset, valdataset = setup_dataset_2t(dataX, test_size)
-    trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
-    valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
+    high_res, low_res = load_tiny_data_sr(
+        data_dir=data_dir,
+        people=people,
+        gestures=gestures,
+        data_type="npy",
+        pix_norm=pix_norm,
+    )
+    trainloader, valloader = setup_sr_data_loader(
+        low_res, high_res, test_size, batch_size
+    )
+
     data_set_name = data_dir.split("/")[-2] + "_" + str(pix_norm).lower()
     return trainloader, valloader, data_set_name

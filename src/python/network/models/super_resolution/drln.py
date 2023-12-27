@@ -92,13 +92,10 @@ class Drln(BasicModel):
 
     @staticmethod
     def reshape_to_model_output(low_res, high_res, device):
-        batch_size, time_steps, channels = (
-            low_res.shape[0],
-            low_res.shape[1],
-            low_res.shape[2],
-        )
-        X = low_res.reshape(batch_size, 1, low_res.shape[1], low_res.shape[2])
-        y = high_res.reshape(batch_size, 1, high_res.shape[1], high_res.shape[2])
+        """input shape is (N,doppler_points,range_points)"""
+        batch_size = low_res.shape[0]
+        X = low_res.reshape(batch_size, 1, low_res.shape[2], low_res.shape[3])
+        y = high_res.reshape(batch_size, 1, high_res.shape[2], high_res.shape[3])
         return X.to(device), y.to(device)
 
     def forward(self, x):

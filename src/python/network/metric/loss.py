@@ -16,7 +16,7 @@ class LossFactory:
     loss_functions = {
         "l1": nn.L1Loss(),
         "mse": nn.MSELoss(),
-        "huber": nn.HuberLoss(),
+        "huber": nn.HuberLoss(delta=0.65),
         "crossentropy": nn.CrossEntropyLoss(),
     }
 

@@ -11,12 +11,12 @@ class Normalization(Enum):
     Range_neg_1_1 = auto()
 
 
-def normalize_img(img: np.ndarray, type: Normalization) -> np.ndarray:
-    if type == Normalization.NONE:
+def normalize_img(img: np.ndarray, pix_norm: Normalization) -> np.ndarray:
+    if pix_norm == Normalization.NONE:
         return img
-    elif type == Normalization.Range_0_1:
+    elif pix_norm == Normalization.Range_0_1:
         return (img - np.min(img)) / (np.max(img) - np.min(img) + EPSILON)
-    elif type == Normalization.Range_neg_1_1:
+    elif pix_norm == Normalization.Range_neg_1_1:
         return (img - np.min(img)) / (np.max(img) - np.min(img) + EPSILON) * 2 - 1
     else:
-        raise ValueError("Unknown normalization type: " + str(type))
+        raise ValueError("Unknown normalization type: " + str(pix_norm))
