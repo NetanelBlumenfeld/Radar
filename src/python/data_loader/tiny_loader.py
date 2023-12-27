@@ -2,40 +2,15 @@ import os
 from functools import partial
 from multiprocessing import Pool
 
-import cv2
 import numpy as np
 from scipy.fftpack import fft, fftshift
-from utils.utils_images import Normalization, normalize_img
-
-# def normalize_data(img, pix_norm: Normalization = Normalization.Range_0_1):
-#     EPSILON = 1e-8
-
-#     """normalize the doppler maps of tiny radar dataset"""
-#     if pix_norm == Normalization.NONE:
-#         return img
-#     elif pix_norm == Normalization.Range_0_1:
-#         return (img - np.min(img)) / (np.max(img) - np.min(img) + EPSILON)
-#     elif pix_norm == Normalization.Range_neg_1_1:
-#         return (img - np.min(img)) / (np.max(img) - np.min(img) + EPSILON) * 2 - 1
-#     else:
-#         raise ValueError("Unknown normalization type: " + str(type))
+from utils.utils_images import Normalization, down_sample_img, normalize_img
 
 
 def down_sample_data_sr(
     x: np.ndarray, row_factor: int, col_factor: int, original_dim: bool = False
 ) -> np.ndarray:
-    def _down_sample(img: np.ndarray, row_factor: int, col_factor: int) -> np.ndarray:
-        return img[::row_factor, ::col_factor]
-
-    def _up_scale(img: np.ndarray, dim_up: tuple[int, int]) -> np.ndarray:
-        real_img = np.real(img)
-        imag_img = np.imag(img)
-        data_real_up = cv2.resize(real_img, dim_up, interpolation=cv2.INTER_CUBIC)
-        data_imag_up = cv2.resize(imag_img, dim_up, interpolation=cv2.INTER_CUBIC)
-        return data_real_up + 1j * data_imag_up
-
     assert x.ndim == 3
-    org_dim = (x.shape[2], x.shape[1])
     if original_dim:
         res = np.empty_like(x)
     else:
@@ -49,11 +24,7 @@ def down_sample_data_sr(
         )
     x_len = x.shape[0]
     for i in range(x_len):
-        img = _down_sample(x[i], row_factor, col_factor)
-        if original_dim:
-            img = _up_scale(img, org_dim)
-
-        res[i] = img
+        res[i] = down_sample_img(x[i], row_factor, col_factor, original_dim)
     return res
 
 
@@ -180,3 +151,19 @@ def load_tiny_data_sr(
 
     assert high_res.shape[0] == low_res.shape[0]
     return high_res, low_res
+
+
+def load_tiny_data(
+    data_dir: str, people: int, gestures: list, data_type: str
+) -> np.ndarray:
+    res = data_paths(data_dir, people, gestures, data_type)
+    num_workers = os.cpu_count()
+    load_data_func = partial(load_data, with_labels=False)
+    print(f"loading data with {num_workers} cpu cores")
+    with Pool(num_workers) as p:
+        data = p.map(load_data_func, res)
+    print("concatenating data")
+    data = np.concatenate(data)
+    data = feat_sr_reshape(npy_feat_reshape(data))
+
+    return data
