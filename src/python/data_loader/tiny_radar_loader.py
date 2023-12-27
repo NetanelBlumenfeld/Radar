@@ -5,7 +5,7 @@ from multiprocessing import Pool
 import cv2
 import numpy as np
 import torch
-from data_loader.tiny_loader import load_tiny_data_sr
+from data_loader.tiny_loader import load_tiny_data_high_res, load_tiny_data_sr
 from data_loader.utils_tiny import (
     doppler_maps,
     doppler_maps_mps,
@@ -19,34 +19,30 @@ from data_loader.utils_tiny import (
 from scipy.fftpack import fft, fftshift, ifft, ifftshift
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
-from utils.utils_images import Normalization
+from utils.utils_images import Normalization, down_sample_img, normalize_img
 
 
-class ReconstractDataset(Dataset):
+class DopplerDataset(Dataset):
     def __init__(self, imgs):
-        imgs_high_res = np.concatenate([np.array(d) for d in imgs])
-        imgs_high_res = doppler_maps(imgs_high_res)
-        imgs_high_res = normalize_tiny_data(imgs_high_res, Normalization.Range_0_1)
-        x = down_sample_data(imgs_high_res, 4, 4, False)
-        x = torch.tensor(x, dtype=torch.float32)
-        x_len, time_steps, rows, cols, channels = imgs_high_res.shape
-        self.x = x.permute(0, 1, 4, 2, 3).reshape(
-            x_len * time_steps * channels, 1, rows // 4, cols // 4
-        )
-        self.y = (
-            torch.tensor(imgs_high_res, dtype=torch.float32)
-            .permute(0, 1, 4, 2, 3)
-            .reshape(x_len * time_steps * channels, 1, rows, cols)
-        )
+        self.imgs = imgs
+
+    def process_data(self, x: np.ndarray) -> np.ndarray:
+        x = np.abs(fftshift(fft(x, axis=0), axes=0))
+        x = normalize_img(x, Normalization.Range_0_1)
+        x = np.expand_dims(x, axis=0)
+        return x
 
     def __len__(self):
-        return self.x.shape[0]
+        return self.imgs.shape[0]
 
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-
-        return self.x[idx], self.y[idx]
+        high_res_time = self.imgs[idx]
+        high_res = self.process_data(high_res_time)
+        low_res_time = down_sample_img(high_res_time, 4, 4)
+        low_res = self.process_data(low_res_time)
+        return low_res, high_res
 
 
 class SRClassifierDataset(Dataset):
@@ -144,6 +140,36 @@ def setup_sr_data_loader(
     del X_train, Y_train
     valdataset = SRDataset(X_val, Y_val)
     del X_val, Y_val
+    trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
+    valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
+
+    return trainloader, valloader
+
+
+def setup_high_res_data_loader(
+    y: np.ndarray, test_size: float, batch_size: int, random_state=42
+) -> tuple[DataLoader, DataLoader]:
+    """
+    Split the dataset into training and validation sets.
+
+    Parameters:
+    - y: high res images.
+    - test_size: Fraction of the dataset to be used as validation data.
+    - random_state: Seed for the random number generator for reproducibility.
+
+    Returns:
+    - traindataset: Training dataset.
+    - valdataset: Validation dataset.
+    """
+
+    # Split the dataset
+    Y_train, Y_val = train_test_split(y, test_size=test_size, random_state=random_state)
+
+    # Generate datasets
+    traindataset = DopplerDataset(Y_train)
+    del Y_train
+    valdataset = DopplerDataset(Y_val)
+    del Y_val
     trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
     valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
 
@@ -380,6 +406,22 @@ def tiny_tt(
     trainloader, valloader = setup_sr_data_loader(
         low_res, high_res, test_size, batch_size
     )
+
+    data_set_name = data_dir.split("/")[-2] + "_" + str(pix_norm).lower()
+    return trainloader, valloader, data_set_name
+
+
+def tiny_data_high_res(
+    data_dir: str,
+    people: int,
+    gestures: list[str],
+    batch_size: int,
+    pix_norm: Normalization,
+    test_size: float = 0.05,
+) -> tuple[DataLoader, DataLoader, str]:
+    print(f"People: {people}, Gestures: {gestures}, Batch Size: {batch_size}")
+    high_res = load_tiny_data_high_res(data_dir, people, gestures, "npy")
+    trainloader, valloader = setup_high_res_data_loader(high_res, test_size, batch_size)
 
     data_set_name = data_dir.split("/")[-2] + "_" + str(pix_norm).lower()
     return trainloader, valloader, data_set_name

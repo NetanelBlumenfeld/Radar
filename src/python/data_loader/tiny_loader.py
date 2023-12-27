@@ -153,7 +153,7 @@ def load_tiny_data_sr(
     return high_res, low_res
 
 
-def load_tiny_data(
+def load_tiny_data_high_res(
     data_dir: str, people: int, gestures: list, data_type: str
 ) -> np.ndarray:
     res = data_paths(data_dir, people, gestures, data_type)
