@@ -213,7 +213,7 @@ def train_drln(
             batch_size,
             pix_norm,
             test_size=0.1,
-            data_type="data_npy",
+            data_type="npy",
         )
     for x, y in training_generator:
         break
