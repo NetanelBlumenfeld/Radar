@@ -24,7 +24,7 @@ if __name__ == "__main__":
     people = 26
 
     batch_size = 128
-    epochs = 200
+    epochs = 400
 
     pc = "3080"
     verbose = 1
