@@ -1,6 +1,7 @@
 from typing import Any
 
 import torch
+import torch.optim.lr_scheduler as lr_scheduler
 from network.experiment_tracker import CallbackHandler
 from network.metric.metric_tracker import MetricTracker
 from torch.utils.data.dataloader import DataLoader
@@ -26,6 +27,7 @@ class Runner:
         self.acc_metric = acc_metric
         self.loss_metric = loss_metric
         self.callbacks = callbacks
+        self.lr_s = lr_scheduler.ExponentialLR(optimizer, gamma=0.99)
 
     def reset(self):
         self.acc_metric.reset()
@@ -45,6 +47,8 @@ class Runner:
             logs["metrics"]["val"] = self.validate()
             self.reset()
             self.callbacks.on_epoch_end(i, logs)
+            self.lr_s.step()
+            print(f"epoch {i} lr: {self.optimizer.param_groups[0]['lr']}")
         logs["data_loader"] = self.loader_validation
         self.callbacks.on_train_end(logs)
 

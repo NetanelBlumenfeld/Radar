@@ -113,5 +113,6 @@ def load_tiny_data(
     print("concatenating data")
     data = np.concatenate(data)
     data = feat_sr_reshape(npy_feat_reshape(data))
+    data = data[~np.all(data == 0, axis=(1, 2))]
 
     return data
