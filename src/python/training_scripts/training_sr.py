@@ -1,11 +1,11 @@
 import os
 
 import torch as torch
-from data_loader.tiny_radar_loader import (
-    tiny_data_high_res,
+from data_loader.tiny_loader import load_tiny_data, load_tiny_data_sr
+from data_loader.tiny_radar_loader import (  # tiny_data_high_res,; tiny_radar_of_disk,; tiny_tt,
+    dataset_tiny,
+    dataset_tiny_sr_off_disk,
     tiny_radar_for_sr,
-    tiny_radar_of_disk,
-    tiny_tt,
 )
 from network.experiment_tracker import (
     BaseTensorBoardTracker,
@@ -187,13 +187,13 @@ def train_drln(
     verbose: int = 0,
 ):
     pix_norm = Normalization.Range_0_1
-    lr = 0.0005
+    lr = 0.003
     if pc == "4090":
         (
             training_generator,
             val_generator,
             dataset_name,
-        ) = tiny_tt(
+        ) = dataset_tiny_sr_off_disk(
             dir,
             people,
             gestures,
@@ -206,13 +206,14 @@ def train_drln(
             training_generator,
             val_generator,
             dataset_name,
-        ) = tiny_data_high_res(
+        ) = dataset_tiny(
             dir,
             people,
             gestures,
             batch_size,
             pix_norm,
             test_size=0.1,
+            data_type="npy",
         )
     for x, y in training_generator:
         break

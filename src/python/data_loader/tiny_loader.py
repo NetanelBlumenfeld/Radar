@@ -3,7 +3,7 @@ from functools import partial
 from multiprocessing import Pool
 
 import numpy as np
-from scipy.fftpack import fft, fftshift
+from data_loader.utils_tiny1 import doppler_map, feat_sr_reshape, npy_feat_reshape
 from utils.utils_images import Normalization, down_sample_img, normalize_img
 
 
@@ -62,58 +62,6 @@ def load_data(data_paths: str, with_labels: bool = False) -> np.ndarray:
     return data
 
 
-def npy_feat_reshape(x: np.ndarray) -> np.ndarray:
-    numberOfWindows = x.shape[0]
-    numberOfSweeps = x.shape[1]
-    numberOfRangePoints = x.shape[2]
-    numberOfSensors = x.shape[3]
-    lengthOfSubWindow = 32
-
-    numberOfSubWindows = int(numberOfSweeps / lengthOfSubWindow)
-
-    x = x.reshape(
-        (
-            numberOfWindows,
-            numberOfSubWindows,
-            lengthOfSubWindow,
-            numberOfRangePoints,
-            numberOfSensors,
-        )
-    )
-    return x
-
-
-def feat_sr_reshape(x: np.ndarray) -> np.ndarray:
-    """
-    reshape data to fit the SR model input
-    output shape is (samples*sub_windows*sensors,range_points, doppler_points)
-    """
-    assert x.ndim == 5, "data must be 5D"
-    x_reshape = x.transpose(0, 1, 4, 2, 3)
-    samples, sub_windows, sensors, range_points, doppler_points = x_reshape.shape
-    x_reshape = x_reshape.reshape(
-        samples * sub_windows * sensors, range_points, doppler_points
-    )
-    return x_reshape
-
-
-def doppler_map(x: np.ndarray, ax: int = 1) -> np.ndarray:
-    """input shape is (N,doppler_points,range_points)"""
-    assert x.ndim == 3, "data must be 3D"
-    return np.abs(fftshift(fft(x, axis=ax), axes=ax))
-
-
-def normalize_sr_data(
-    x: np.ndarray, norm: Normalization = Normalization.Range_0_1
-) -> np.ndarray:
-    """input shape is (N,doppler_points,range_points)"""
-    assert x.ndim == 3, "data must be 3D"
-    x_len = x.shape[0]
-    for i in range(x_len):
-        x[i] = normalize_img(x[i], norm)
-    return x
-
-
 def load_tiny_data_sr_pipeline(
     path: str, norm_func, down_sample_func
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -153,7 +101,7 @@ def load_tiny_data_sr(
     return high_res, low_res
 
 
-def load_tiny_data_high_res(
+def load_tiny_data(
     data_dir: str, people: int, gestures: list, data_type: str
 ) -> np.ndarray:
     res = data_paths(data_dir, people, gestures, data_type)
@@ -165,5 +113,6 @@ def load_tiny_data_high_res(
     print("concatenating data")
     data = np.concatenate(data)
     data = feat_sr_reshape(npy_feat_reshape(data))
+    data = data[~np.all(data == 0, axis=(1, 2))]
 
     return data
