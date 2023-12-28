@@ -9,19 +9,19 @@ from training_scripts.training_sr_classifier import train_srcnn_tiny_radar
 if __name__ == "__main__":
     gestures = [
         "PinchIndex",
-        # "PinchPinky",
-        # "FingerSlider",
-        # "FingerRub",
-        # "SlowSwipeRL",
-        # "FastSwipeRL",
-        # "Push",
-        # "Pull",
-        # "PalmTilt",
-        # "Circle",
-        # "PalmHold",
-        # "NoHand",
+        "PinchPinky",
+        "FingerSlider",
+        "FingerRub",
+        "SlowSwipeRL",
+        "FastSwipeRL",
+        "Push",
+        "Pull",
+        "PalmTilt",
+        "Circle",
+        "PalmHold",
+        "NoHand",
     ]
-    people = 3
+    people = 26
 
     batch_size = 128
     epochs = 400
