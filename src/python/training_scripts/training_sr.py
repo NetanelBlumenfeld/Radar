@@ -187,7 +187,7 @@ def train_drln(
     verbose: int = 0,
 ):
     pix_norm = Normalization.Range_0_1
-    lr = 0.003
+    lr = 0.002
     if pc == "4090":
         (
             training_generator,

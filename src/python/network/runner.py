@@ -27,7 +27,7 @@ class Runner:
         self.acc_metric = acc_metric
         self.loss_metric = loss_metric
         self.callbacks = callbacks
-        self.lr_s = lr_scheduler.ExponentialLR(optimizer, gamma=0.99)
+        self.lr_s = lr_scheduler.ExponentialLR(optimizer, gamma=0.995)
 
     def reset(self):
         self.acc_metric.reset()
