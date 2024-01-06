@@ -1,4 +1,5 @@
 import datetime
+import os
 from typing import Optional
 
 import numpy as np
@@ -167,6 +168,7 @@ class BaseTensorBoardTracker(CallbackProtocol):
 
 
 class SaveModel(CallbackProtocol):
+    # TODO - save my metric name and operation
     def __init__(self, save_path: str):
         ensure_path_exists(save_path)
         self.save_path = save_path
@@ -186,33 +188,41 @@ class SaveModel(CallbackProtocol):
             },
             path,
         )
-        print(f"\nSaved model at - {path}")
+        print(f"\nSaved model at - {path}, Loss - {loss}, Acc - {acc}")
 
-    def on_epoch_end(self, epoch: int, optimizer, logs: Optional[dict] = None) -> None:
+    def on_epoch_end(self, epoch: int, logs: Optional[dict] = None) -> None:
         if logs is None:
-            return
+            raise ValueError("logs is None on ModelSave callback")
         loss = logs["metrics"]["val"]["loss"]
         acc = logs["metrics"]["val"]["acc"]
         model = logs["model"]
+        optimizer = logs["optimizer"]
         if acc > self.max_val_acc:
             self.max_val_acc = acc
-            path = self.save_path + "max_acc_model.pt"
+            path = os.path.join(self.save_path + "max_acc_model.pt")
             self._save(path, model, optimizer, epoch, loss, acc)
         if loss < self.min_val_loss:
             self.min_val_loss = loss
-            path = self.save_path + "min_loss_model.pt"
+            path = os.path.join(self.save_path + "min_loss_model.pt")
             self._save(path, model, optimizer, epoch, loss, acc)
 
 
 class ProgressBar(CallbackProtocol):
     def __init__(
-        self, loader_train, training_desc: Optional[str] = None, verbose: int = 0
+        self,
+        loader_train,
+        logger=None,
+        training_desc: Optional[str] = None,
+        verbose: int = 0,
+        output_dir: str = "",
     ):
         self.loader_train = loader_train
         self.training_desc = training_desc
         self.verbose = verbose
         self.out_val = ""
         self.out_train = ""
+        self.output_dir = output_dir
+        self.logger = logger
 
     def _print_metrics(self, metrics: dict[str, dict]) -> str:
         res = ""
@@ -233,8 +243,8 @@ class ProgressBar(CallbackProtocol):
                 bar_format=bar_format,
                 ncols=200,
             )
-        elif self.verbose == 1:
-            print("Start training")
+        elif self.verbose == 1 and self.logger is not None:
+            self.logger.debug(f"Training - {self.training_desc}")
 
     def on_train_end(self, logs: Optional[dict] = None) -> None:
         if self.verbose == 0:
@@ -245,8 +255,8 @@ class ProgressBar(CallbackProtocol):
         if self.verbose == 0:
             self.pbar.reset()
             self.pbar.set_description(f"Epoch {epoch}")
-        elif self.verbose == 1:
-            print(f"Epoch {epoch} - {self.out_train} {self.out_val}")
+        elif self.verbose == 1 and self.logger is not None:
+            self.logger.debug(f"Epoch {epoch} - {self.out_train} {self.out_val}")
 
         self.out_val = ""
         self.out_train = ""

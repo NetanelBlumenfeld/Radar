@@ -40,7 +40,10 @@ def feat_sr_reshape(x: np.ndarray) -> np.ndarray:
 
 def doppler_map(x: np.ndarray, ax: int = 1) -> np.ndarray:
     """input shape is (N,doppler_points,range_points)"""
-    assert x.ndim == 3, "data must be 3D"
+    if ax == 1:
+        assert x.ndim == 3, f"ax is {ax} so data must be 3D"
+    if ax == 0:
+        assert x.ndim == 2, f"ax is {ax} so data must be 2D"
     return np.abs(fftshift(fft(x, axis=ax), axes=ax))
 
 

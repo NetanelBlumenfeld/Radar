@@ -66,10 +66,9 @@ class TinyRadarNN(BasicModel):
         numberOfTimeSteps: int = 5,
         numberOfGestures: int = 12,
         base_name: str = "TinyRadar",
-        only_wights: bool = True,
     ):
         # Parameters that need to be consistent with the dataset
-        super(TinyRadarNN, self).__init__(base_name, only_wights)
+        super(TinyRadarNN, self).__init__(base_name)
         self.nSensors = numberOfSensors
         self.nTimeSteps = numberOfTimeSteps
         self.nGestures = numberOfGestures

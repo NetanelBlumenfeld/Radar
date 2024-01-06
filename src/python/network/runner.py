@@ -36,6 +36,7 @@ class Runner:
     def run(self, epochs: int):
         logs = {
             "model": self.model,
+            "optimizer": self.optimizer,
             "metrics": {"train": None, "val": None},
             "data_loader": None,
         }

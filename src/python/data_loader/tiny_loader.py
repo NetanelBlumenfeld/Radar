@@ -1,10 +1,11 @@
 import os
 from functools import partial
 from multiprocessing import Pool
+from typing import Callable, Optional
 
 import numpy as np
-from data_loader.utils_tiny1 import doppler_map, feat_sr_reshape, npy_feat_reshape
-from utils.utils_images import Normalization, down_sample_img, normalize_img
+from data_loader.utils_tiny1 import feat_sr_reshape, npy_feat_reshape
+from utils.utils_images import down_sample_img
 
 
 def down_sample_data_sr(
@@ -51,49 +52,65 @@ def data_paths(data_dir: str, people: int, gestures: list, data_type: str) -> li
     return data_paths
 
 
-def load_data(data_paths: str, with_labels: bool = False) -> np.ndarray:
-    # TODO: add labels
+def load_data(
+    data_path: str,
+    gestures: Optional[list[str]] = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    def _get_gesture_index(data_dir: str, gestures: list[str]) -> int:
+        file_name = data_dir.split("/")[-1]
+        gesture = file_name.split("_")[0]
+        return gestures.index(gesture)
+
     try:
-        data = np.load(data_paths)
+        data = np.load(data_path)
+        data = npy_feat_reshape(data)
     except Exception as e:
-        raise ValueError(f"failed to load data from {data_paths}: {str(e)}")
-    if with_labels:
-        pass
-    return data
+        raise ValueError(f"failed to load data from {data_path}: {str(e)}")
+    else:
+        SubjectLabel = []
+        if gestures:
+            gestureIdx = _get_gesture_index(data_path, gestures)
+            gestures_num = len(gestures)
+            for idx in range(0, data.shape[0]):
+                GestureLabel = []
+                for jdx in range(0, data.shape[1]):
+                    GestureLabel.append(np.identity(gestures_num)[gestureIdx])
+                SubjectLabel.append(np.asarray(GestureLabel))
+    return data, np.array(SubjectLabel)
 
 
-def load_tiny_data_sr_pipeline(
-    path: str, norm_func, down_sample_func
-) -> tuple[np.ndarray, np.ndarray]:
-    print(f"loading data from -- {path}")
-    high_res_time = load_data(path)
-    high_res_time = feat_sr_reshape(npy_feat_reshape(high_res_time))
-    low_res_time = down_sample_func(high_res_time)
-    high_res = doppler_map(high_res_time)
-    high_res = norm_func(high_res)
-    low_res = doppler_map(low_res_time)
-    low_res = norm_func(low_res)
-    high_res = high_res[~np.all(high_res == 0, axis=(1, 2))]
-    low_res = low_res[~np.all(low_res == 0, axis=(1, 2))]
-    return low_res, high_res
-
-
-def load_tiny_data_sr(
-    data_dir: str, people: int, gestures: list, data_type: str, pix_norm: Normalization
-) -> tuple[np.ndarray, np.ndarray]:
+def load_tiny_data(
+    data_dir: str, people: int, gestures: list, data_type: str, task: str
+):
     res = data_paths(data_dir, people, gestures, data_type)
-    ds_func = partial(
-        down_sample_data_sr, row_factor=4, col_factor=4, original_dim=False
-    )
-    norm_func = partial(normalize_img, pix_norm=pix_norm)
     num_workers = os.cpu_count()
-    load_data_func = partial(
-        load_tiny_data_sr_pipeline, norm_func=norm_func, down_sample_func=ds_func
-    )
+    load_data_func = partial(load_data, gestures=gestures)
+    print(f"loading data with {num_workers} cpu cores")
+    with Pool(num_workers) as p:
+        data = p.map(load_data_func, res)
+    print(f"y - {data[0][1].shape}, len - {len(data)}")
+    y = np.concatenate(list(map(lambda x: x[1], data)))
+    X = np.concatenate(list(map(lambda x: x[0], data)))
+    if task == "sr":
+        X = feat_sr_reshape(X)
+    # elif task == "sr_classifier" or task == "classifier":
+    # X = npy_feat_reshape(X)
+    # else:
+    # rai/se ValueError("task must be sr or classifier")
+    print(f"X,y shapes - {X.shape}, {y.shape}")
+    # X = X[~np.all(X == 0, axis=(1, 2))]
+    return X, y
+
+
+def load_tiny_data_sr_4090(
+    data_dir: str, people: int, gestures: list, data_type: str, load_data_func: Callable
+) -> tuple[np.ndarray, np.ndarray]:
+    "this function used for loading low res images before training the sr model"
+    res = data_paths(data_dir, people, gestures, data_type)
+    num_workers = os.cpu_count()
     print(f"down sampling data with {num_workers} cpu cores")
     with Pool(num_workers) as p:
         data = p.map(load_data_func, res)
-    print("concatenating data")
     high_res = np.concatenate(list(map(lambda x: x[1], data)))
     low_res = np.concatenate(list(map(lambda x: x[0], data)))
 
@@ -101,18 +118,18 @@ def load_tiny_data_sr(
     return high_res, low_res
 
 
-def load_tiny_data(
-    data_dir: str, people: int, gestures: list, data_type: str
-) -> np.ndarray:
+def load_tiny_data_sr_classifier_4090(
+    data_dir: str, people: int, gestures: list, data_type: str, load_data_func: Callable
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    "this function used for loading low res images before training the sr model"
     res = data_paths(data_dir, people, gestures, data_type)
     num_workers = os.cpu_count()
-    load_data_func = partial(load_data, with_labels=False)
-    print(f"loading data with {num_workers} cpu cores")
+    print(f"down sampling data with {num_workers} cpu cores")
     with Pool(num_workers) as p:
         data = p.map(load_data_func, res)
-    print("concatenating data")
-    data = np.concatenate(data)
-    data = feat_sr_reshape(npy_feat_reshape(data))
-    data = data[~np.all(data == 0, axis=(1, 2))]
+    high_res = np.concatenate(list(map(lambda x: x[1], data)))
+    low_res = np.concatenate(list(map(lambda x: x[0], data)))
+    labels = np.concatenate(list(map(lambda x: x[2], data)))
 
-    return data
+    assert high_res.shape[0] == low_res.shape[0]
+    return high_res, low_res, labels

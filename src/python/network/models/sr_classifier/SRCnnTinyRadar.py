@@ -8,22 +8,21 @@ class CombinedSRCNNClassifier(BasicModel):
         srcnn: BasicModel,
         classifier: BasicModel,
         scale_factor: int = 1,
-        only_wights: bool = False,
     ):
         model_name = f"sr_{srcnn.model_name}_classifier_{classifier.model_name}"
-        super(CombinedSRCNNClassifier, self).__init__(model_name, only_wights)
+        super(CombinedSRCNNClassifier, self).__init__(model_name)
         self.srcnn = srcnn
         self.classifier = classifier
         self.scale_factor = scale_factor
 
     @staticmethod
     def reshape_to_model_output(batch, labels, device):
-        hgit_res_imgs, true_label = labels
-        batch, true_label = batch.permute(1, 0, 2, 3, 4).to(device), true_label.permute(
-            1, 0
-        ).to(device)
-        hgit_res_imgs = hgit_res_imgs.permute(1, 0, 2, 3, 4).to(device)
-        return batch, [hgit_res_imgs, true_label]
+        high_res_imgs, true_label = labels
+        high_res_imgs = high_res_imgs.to(device)
+        true_label = true_label.to(device)
+        batch = batch.to(device)
+
+        return batch, [high_res_imgs, true_label]
 
     def forward(self, inputs):
         sequence_length, batch_size, channels, H, W = inputs.size()
