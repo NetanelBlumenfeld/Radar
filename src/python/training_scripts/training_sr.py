@@ -2,25 +2,20 @@ import os
 from typing import Optional
 
 import torch as torch
-from data_loader.tiny_loader import load_tiny_data, load_tiny_data_sr
-from data_loader.tiny_radar_loader import (  # tiny_data_high_res,; tiny_radar_of_disk,; tiny_tt,
-    dataset_tiny,
-    dataset_tiny_sr_off_disk,
-    tiny_radar_for_sr,
-)
+from config import DataTransformCfg
 from network.experiment_tracker import (
     BaseTensorBoardTracker,
     CallbackHandler,
     ProgressBar,
     SaveModel,
-    get_time_in_string,
 )
 from network.metric.loss import LossType, SimpleLoss
-from network.metric.metric_tracker import AccuracyMetric, LossMetric
+from network.metric.metric_tracker import LossMetric
 from network.models.super_resolution.drln import Drln
-from network.models.super_resolution.srcnn import SRCnn
 from network.runner import Runner
+from torch.utils.data import DataLoader
 from utils.utils_images import Normalization
+from utils.utils_paths import get_time_in_string
 
 
 def train_scrnn(
@@ -101,53 +96,24 @@ def train_scrnn(
 
 
 def train_drln(
-    dir: str,
-    pc: str,
+    training_generator: DataLoader,
+    val_generator: DataLoader,
+    transform_cfg: DataTransformCfg,
     output_dir: str,
     gestures: list[str],
-    people: int,
     device: torch.device,
     epochs: int,
     batch_size: int,
     verbose: int = 0,
     checkpoint: Optional[str] = None,
 ):
-    pix_norm = Normalization.Range_0_1
     lr = 0.0015
-    if pc == "4090":
-        (
-            training_generator,
-            val_generator,
-            dataset_name,
-        ) = dataset_tiny_sr_off_disk(
-            dir,
-            people,
-            gestures,
-            batch_size,
-            pix_norm,
-            test_size=0.1,
-        )
-    else:
-        (
-            training_generator,
-            val_generator,
-            dataset_name,
-        ) = dataset_tiny(
-            dir,
-            people,
-            gestures,
-            batch_size,
-            pix_norm,
-            test_size=0.1,
-            data_type="npy",
-        )
-    for x, y in training_generator:
-        break
+
     print(
-        f"dataset name: {dataset_name}, num of train and val batches {len(training_generator)} , {len(val_generator)} "  # noqa
+        f"dataset name: {transform_cfg}, batch size: {batch_size}, num of train and val batches {len(training_generator)} , {len(val_generator)} "
     )
-    print(f"x shape {x.shape}, y shape {y.shape}")
-    model = Drln(2).to(device)
+
+    model = Drln(num_drln_blocks=2, num_channels=2).to(device)
     if checkpoint is not None:
         model.load_state_dict(torch.load(checkpoint))
 
@@ -162,7 +128,7 @@ def train_drln(
     experiment_name = os.path.join(
         "sr",  # model type
         model.model_name,  # model name
-        dataset_name,  # dataset name
+        f"{transform_cfg}",  # dataset name
         train_config,  # training configuration
         get_time_in_string(),
     )

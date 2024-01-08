@@ -34,3 +34,9 @@ class BasicModel(nn.Module):
         loss = checkpoint["loss"]
 
         return model, optimizer, epoch, loss
+
+    def freeze_weights(self):
+        # Freeze all weights in the model
+        for param in self.parameters():
+            param.requires_grad = False
+        self.model_name += "_frozen"

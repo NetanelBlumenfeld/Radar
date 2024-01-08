@@ -8,10 +8,11 @@ from data_loader.tiny_loader import (
     load_tiny_data_sr_4090,
     load_tiny_data_sr_classifier_4090,
 )
-from scipy.fftpack import fft, fftshift
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
-from utils.utils_images import Normalization, down_sample_img, normalize_img
+from utils.utils_images import down_sample_img
+
+RANDOM_STATE = 42
 
 
 class SrDataSet_3080(Dataset):
@@ -20,28 +21,22 @@ class SrDataSet_3080(Dataset):
         self.transform = transform
         assert self.transform is not None
 
-    def process_data(self, x: np.ndarray) -> np.ndarray:
-        # TODO: adding this as preprocess pipeline
-        x = np.abs(fftshift(fft(x, axis=0), axes=0))
-        x = normalize_img(x, Normalization.Range_0_1)
-        x = np.expand_dims(x, axis=0)
-        return x
-
     def __len__(self) -> int:
         return self.imgs.shape[0]
 
     def __getitem__(self, idx) -> tuple[np.ndarray, np.ndarray]:
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        high_res_time = self.imgs[idx]
-        high_res = self.transform(high_res_time)
-        low_res_time = down_sample_img(high_res_time, 4, 4)
-        low_res = self.transform(low_res_time)
-
-        # high_res = self.process_data(high_res_time)
+        # high_res_time = self.imgs[idx]
+        # high_res = self.transform(high_res_time)
         # low_res_time = down_sample_img(high_res_time, 4, 4)
-        # low_res = self.process_data(low_res_time)
-        return low_res, high_res
+        # low_res = self.transform(low_res_time)
+        # return low_res, high_res
+        high_res_time = self.transform(self.imgs[idx])
+        low_res_time = np.zeros_like(high_res_time)
+        low_res_time[0] = down_sample_img(high_res_time[0], 4, 4)
+        low_res_time[1] = down_sample_img(high_res_time[1], 4, 4)
+        return low_res_time, high_res_time
 
 
 class ClassifierDataset(Dataset):
@@ -104,8 +99,12 @@ class SrDataSet_4090(Dataset):
         """ "
         take input with shape (N,H,W) and add channel dim (N,1,H,W)
         """
-        self.x = np.expand_dims(low_res, axis=1)
-        self.y = np.expand_dims(hight_res, axis=1)
+        if low_res.ndim == 3:
+            low_res = np.expand_dims(low_res, axis=1)
+        if hight_res.ndim == 3:
+            hight_res = np.expand_dims(hight_res, axis=1)
+        self.x = low_res
+        self.y = hight_res
 
     def __len__(self):
         return self.x.shape[0]
@@ -121,7 +120,14 @@ class SrClassifier_4090(Dataset):
     def __init__(self, low_res: np.ndarray, high_res: np.ndarray, labels: np.ndarray):
         self.low_res = low_res
         self.high_res = high_res
-        self.labels = labels
+        self.tempy = labels
+        self.label = np.empty((self.tempy.shape[0], self.tempy.shape[1]))
+        for idx in range(self.tempy.shape[0]):
+            for j in range(self.tempy.shape[1]):
+                for i in range(self.tempy.shape[2]):
+                    if self.tempy[idx][j][i] == 1:
+                        self.label[idx][j] = i
+        del self.tempy
 
     def __len__(self):
         return self.low_res.shape[0]
@@ -130,162 +136,10 @@ class SrClassifier_4090(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        return self.low_res[idx], [self.high_res[idx], self.labels[idx]]
-
-
-def loader_sr_classifier_3080(
-    high_res: np.ndarray,
-    labels: np.ndarray,
-    test_size: float,
-    batch_size: int,
-    transform_pipeline: Callable,
-    random_state=42,
-) -> tuple[DataLoader, DataLoader]:
-    high_res_train, high_res_val, labels_train, labels_val = train_test_split(
-        high_res, labels, test_size=test_size, random_state=random_state
-    )
-    traindataset = SrClassifierDataset_3080(
-        high_res_train, labels_train, transform_pipeline
-    )
-    del high_res_train, labels_train
-    valdataset = SrClassifierDataset_3080(high_res_val, labels_val, transform_pipeline)
-    del high_res_val, labels_val
-    trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
-    valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=False)
-    return trainloader, valloader
-
-
-def loader_classifier(
-    X: np.ndarray, y: np.ndarray, test_size: float, batch_size: int, random_state=42
-) -> tuple[DataLoader, DataLoader]:
-    """
-    Split the dataset into training and validation sets.
-
-    Parameters:
-    - X: low res images.
-    - y: labels.
-    - test_size: Fraction of the dataset to be used as validation data.
-    - random_state: Seed for the random number generator for reproducibility.
-
-    Returns:
-    - traindataset: Training dataset.
-    - valdataset: Validation dataset.
-    """
-
-    # Split the dataset
-    X_train, X_val, Y_train, Y_val = train_test_split(
-        X, y, test_size=test_size, random_state=random_state
-    )
-    print("X_train" + str(X_train.shape))
-    print("Y_train" + str(Y_train.shape))
-
-    # Generate datasets
-    traindataset = ClassifierDataset(X_train, Y_train)
-    del X_train, Y_train
-    valdataset = ClassifierDataset(X_val, Y_val)
-    del X_val, Y_val
-    trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
-    valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
-
-    return trainloader, valloader
-
-
-def loader_sr_3080(
-    y: np.ndarray,
-    test_size: float,
-    batch_size: int,
-    transform_pipeline: Callable,
-    random_state=42,
-) -> tuple[DataLoader, DataLoader]:
-    """
-    Split the dataset into training and validation sets.
-
-    Parameters:
-    - y: high res images.
-    - test_size: Fraction of the dataset to be used as validation data.
-    - random_state: Seed for the random number generator for reproducibility.
-
-    """
-
-    # Split the dataset
-    Y_train, Y_val = train_test_split(y, test_size=test_size, random_state=random_state)
-
-    # Generate datasets
-    traindataset = SrDataSet_3080(Y_train, transform_pipeline)
-    del Y_train
-    valdataset = SrDataSet_3080(Y_val, transform_pipeline)
-    del Y_val
-    trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
-    valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=False)
-
-    return trainloader, valloader
-
-
-def loader_sr_4090(
-    X: np.ndarray, y: np.ndarray, test_size: float, batch_size: int, random_state=42
-) -> tuple[DataLoader, DataLoader]:
-    """
-    Split the dataset into training and validation sets.
-
-    Parameters:
-    - dataX: List of data samples.
-    - dataY: Corresponding list of labels.
-    - test_size: Fraction of the dataset to be used as validation data.
-    - random_state: Seed for the random number generator for reproducibility.
-
-    Returns:
-    - traindataset: Training dataset.
-    - valdataset: Validation dataset.
-    """
-
-    # Split the dataset
-    X_train, X_val, Y_train, Y_val = train_test_split(
-        X, y, test_size=test_size, random_state=random_state
-    )
-
-    # Generate datasets
-    traindataset = SrDataSet_4090(X_train, Y_train)
-    del X_train, Y_train
-    valdataset = SrDataSet_4090(X_val, Y_val)
-    del X_val, Y_val
-    trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
-    valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
-
-    return trainloader, valloader
-
-
-def loader_sr_classifier_4090(
-    low_res: np.ndarray,
-    high_res: np.ndarray,
-    labels: np.ndarray,
-    test_size: float,
-    batch_size: int,
-    random_state=42,
-) -> tuple[DataLoader, DataLoader]:
-    print(
-        f"shapes low_res - {low_res.shape}, high_res - {high_res.shape}, labels - {labels.shape}"
-    )
-    (
-        train_low_res,
-        test_low_res,
-        train_high_res,
-        test_high_res,
-        train_labels,
-        test_labels,
-    ) = train_test_split(
-        low_res,
-        high_res,
-        labels,
-        test_size=test_size,
-        random_state=random_state,
-    )
-    # Generate datasets
-    traindataset = SrClassifier_4090(train_low_res, train_high_res, train_labels)
-    valdataset = SrClassifier_4090(test_low_res, test_high_res, test_labels)
-    trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
-    valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
-
-    return trainloader, valloader
+        return self.low_res[idx], [
+            self.high_res[idx],
+            torch.LongTensor(self.label[idx]),
+        ]
 
 
 def tiny_sr_4090(
@@ -303,7 +157,17 @@ def tiny_sr_4090(
         data_type="npy",
         load_data_func=data_cfg.transform_pipeline,
     )
-    trainloader, valloader = loader_sr_4090(low_res, high_res, test_size, batch_size)
+    X_train, X_val, Y_train, Y_val = train_test_split(
+        low_res, high_res, test_size=test_size, random_state=RANDOM_STATE
+    )
+
+    # Generate datasets
+    traindataset = SrDataSet_4090(X_train, Y_train)
+    del X_train, Y_train
+    valdataset = SrDataSet_4090(X_val, Y_val)
+    del X_val, Y_val
+    trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
+    valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
 
     return trainloader, valloader
 
@@ -325,7 +189,16 @@ def tiny_classifier(
     assert data_cfg.transform_pipeline is not None
 
     X = data_cfg.transform_pipeline(X)
-    trainloader, valloader = loader_classifier(X, y, test_size, batch_size)
+    X_train, X_val, Y_train, Y_val = train_test_split(
+        X, y, test_size=test_size, random_state=RANDOM_STATE
+    )
+    traindataset = ClassifierDataset(X_train, Y_train)
+    del X_train, Y_train
+
+    valdataset = ClassifierDataset(X_val, Y_val)
+    del X_val, Y_val
+    trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
+    valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
 
     return trainloader, valloader
 
@@ -344,9 +217,15 @@ def tiny_sr_3080(
         task="sr",
     )
     assert data_cfg.transform_pipeline is not None
-    trainloader, valloader = loader_sr_3080(
-        high_res, test_size, batch_size, data_cfg.transform_pipeline
+    Y_train, Y_val = train_test_split(
+        high_res, test_size=test_size, random_state=RANDOM_STATE
     )
+    traindataset = SrDataSet_3080(Y_train, data_cfg.transform_pipeline)
+    del Y_train
+    valdataset = SrDataSet_3080(Y_val, data_cfg.transform_pipeline)
+    del Y_val
+    trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
+    valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=False)
 
     return trainloader, valloader
 
@@ -365,9 +244,20 @@ def tiny_sr_classifier_3080(
         task="sr_classifier",
     )
     assert data_cfg.transform_pipeline is not None
-    trainloader, valloader = loader_sr_classifier_3080(
-        high_res, labels, test_size, batch_size, data_cfg.transform_pipeline
+    high_res_train, high_res_val, labels_train, labels_val = train_test_split(
+        high_res, labels, test_size=test_size, random_state=RANDOM_STATE
     )
+    traindataset = SrClassifierDataset_3080(
+        high_res_train, labels_train, data_cfg.transform_pipeline
+    )
+    del high_res_train, labels_train
+    valdataset = SrClassifierDataset_3080(
+        high_res_val, labels_val, data_cfg.transform_pipeline
+    )
+    del high_res_val, labels_val
+    trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
+    valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=False)
+
     return trainloader, valloader
 
 
@@ -386,13 +276,26 @@ def tiny_sr_classifier_4090(
         data_cfg.data_type,
         load_data_func=data_cfg.transform_pipeline,
     )
-    trainloader, valloader = loader_sr_classifier_4090(
-        low_res=low_res,
-        high_res=high_res,
-        labels=labels,
+    (
+        train_low_res,
+        test_low_res,
+        train_high_res,
+        test_high_res,
+        train_labels,
+        test_labels,
+    ) = train_test_split(
+        low_res,
+        high_res,
+        labels,
         test_size=test_size,
-        batch_size=batch_size,
+        random_state=RANDOM_STATE,
     )
+    # Generate datasets
+    traindataset = SrClassifier_4090(train_low_res, train_high_res, train_labels)
+    valdataset = SrClassifier_4090(test_low_res, test_high_res, test_labels)
+    trainloader = DataLoader(traindataset, batch_size=batch_size, shuffle=True)
+    valloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
+
     return trainloader, valloader
 
 

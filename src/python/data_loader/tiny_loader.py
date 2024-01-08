@@ -93,12 +93,7 @@ def load_tiny_data(
     X = np.concatenate(list(map(lambda x: x[0], data)))
     if task == "sr":
         X = feat_sr_reshape(X)
-    # elif task == "sr_classifier" or task == "classifier":
-    # X = npy_feat_reshape(X)
-    # else:
-    # rai/se ValueError("task must be sr or classifier")
     print(f"X,y shapes - {X.shape}, {y.shape}")
-    # X = X[~np.all(X == 0, axis=(1, 2))]
     return X, y
 
 
@@ -132,4 +127,4 @@ def load_tiny_data_sr_classifier_4090(
     labels = np.concatenate(list(map(lambda x: x[2], data)))
 
     assert high_res.shape[0] == low_res.shape[0]
-    return high_res, low_res, labels
+    return low_res, high_res, labels

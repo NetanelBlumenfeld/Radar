@@ -15,7 +15,7 @@ class SignalParams(BaseModel):
 
 
 def pulse_wave(
-    prf: np.ndarray, pulse_width: float, fs: float, time_scale: float = 1
+    prf: int, pulse_width: float, fs: float, time_scale: float = 1
 ) -> np.ndarray:
     """
     Generates a pulse wave with a given max range, prf and sampling frequency.
@@ -31,8 +31,6 @@ def pulse_wave(
     return pulse.reshape(-1, 1)
 
 
-def get_carrier(
-    fc: np.ndarray, fs: np.ndarray, prf: np.ndarray, init_phase: np.ndarray
-):
+def get_carrier(fc: int, fs: int, prf: int, init_phase: float) -> np.ndarray:
     time = np.arange(0, 1 / prf, 1 / fs)
     return np.sin(2 * np.pi * fc * time + init_phase)

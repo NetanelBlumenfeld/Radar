@@ -18,9 +18,9 @@ class CombinedSRCNNClassifier(BasicModel):
     @staticmethod
     def reshape_to_model_output(batch, labels, device):
         high_res_imgs, true_label = labels
-        high_res_imgs = high_res_imgs.to(device)
-        true_label = true_label.to(device)
-        batch = batch.to(device)
+        high_res_imgs = high_res_imgs.permute(1, 0, 2, 3, 4).to(device)
+        batch = batch.permute(1, 0, 2, 3, 4).to(device)
+        true_label = true_label.permute(1, 0).to(device)
 
         return batch, [high_res_imgs, true_label]
 

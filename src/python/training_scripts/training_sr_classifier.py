@@ -1,5 +1,4 @@
 import os
-from calendar import c
 from typing import Optional
 
 import torch as torch
@@ -13,13 +12,11 @@ from network.experiment_tracker import (
 from network.metric.accuracy import acc_srcnn_tiny_radar
 from network.metric.loss import LossFunctionSRTinyRadarNN, LossType
 from network.metric.metric_tracker import AccuracyMetric, LossMetricSRTinyRadarNN
-from network.models.basic_model import BasicModel
 from network.models.classifiers.tiny_radar import TinyRadarNN
 from network.models.sr_classifier.SRCnnTinyRadar import CombinedSRCNNClassifier
 from network.models.super_resolution.drln import Drln
 from network.models.super_resolution.srcnn import SRCnn
 from network.runner import Runner
-from scipy import optimize
 from torch.utils.data import DataLoader
 from utils.utils_images import Normalization
 from utils.utils_paths import get_time_in_string
@@ -150,10 +147,12 @@ def train_drln_tiny_radar(
     verbose: int = 1,
 ):
     # Training parameters
-    lr = 0.001
+    lr = 0.0015
     w_sr = 1
     w_c = 1
     loss_type_sr = LossType.L1
+    froze_sr = False
+    froze_classifier = False
 
     print(
         f"dataset name: {transform_cfg}, batch size: {batch_size}, num of train and val batches {len(training_generator)} , {len(val_generator)} "
@@ -167,16 +166,20 @@ def train_drln_tiny_radar(
             device=device,
         )
     else:
-        classifier = TinyRadarNN().to(device)
+        classifier = TinyRadarNN(numberOfGestures=len(gestures)).to(device)
     if drln_checkpoint:
         sr, _, _, _ = Drln.load_model(
             model_dir=drln_checkpoint,
             optimizer_class=torch.optim.Adam,
-            optimizer_args=lr,
+            optimizer_args={"lr": lr},
             device=device,
         )
     else:
         sr = Drln(2).to(device)
+    if froze_sr:
+        sr.freeze_weights()
+    if froze_classifier:
+        classifier.freeze_weights()
     model = CombinedSRCNNClassifier(
         sr, classifier, scale_factor=transform_cfg.down_sample_factor
     ).to(device)
@@ -194,9 +197,9 @@ def train_drln_tiny_radar(
     train_config = (
         f"lr_{lr}_batch_size_{batch_size}_{loss_metric.name}_w_sr_{w_sr}_w_c_{w_c}"
     )
-    if tiny_checkpoint and not drln_checkpoint:
+    if not tiny_checkpoint and drln_checkpoint:
         task_type = "sr_ck_classifier"
-    elif drln_checkpoint and not tiny_checkpoint:
+    elif not drln_checkpoint and tiny_checkpoint:
         task_type = "sr_classifier_ck"
     elif drln_checkpoint and tiny_checkpoint:
         task_type = "sr_ck_classifier_ck"
